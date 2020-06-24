@@ -1,0 +1,1145 @@
+	.file	"main.c"
+	.code16gcc
+	.text
+	.globl	strlen
+	.type	strlen, @function
+strlen:
+.LFB0:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$4, %esp
+	movl	$0, -4(%ebp)
+	nop
+.L2:
+	movl	-4(%ebp), %eax
+	leal	1(%eax), %edx
+	movl	%edx, -4(%ebp)
+	movl	%eax, %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	testb	%al, %al
+	jne	.L2
+	movl	-4(%ebp), %eax
+	decl	%eax
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	strlen, .-strlen
+	.globl	print
+	.type	print, @function
+print:
+.LFB1:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	movl	$0, -4(%ebp)
+	pushl	8(%ebp)
+	call	strlen
+	addl	$4, %esp
+	movl	%eax, -8(%ebp)
+	jmp	.L5
+.L6:
+	movl	-4(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	movsbl	%al, %eax
+	pushl	%eax
+	call	putchar
+	addl	$4, %esp
+	incl	-4(%ebp)
+.L5:
+	movl	-4(%ebp), %eax
+	cmpl	-8(%ebp), %eax
+	jl	.L6
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	print, .-print
+	.globl	printchar
+	.type	printchar, @function
+printchar:
+.LFB2:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	movl	8(%ebp), %eax
+	movb	%al, -8(%ebp)
+	movl	$0, -4(%ebp)
+	jmp	.L8
+.L9:
+	movsbl	-8(%ebp), %eax
+	pushl	%eax
+	call	putchar
+	addl	$4, %esp
+	incl	-4(%ebp)
+.L8:
+	movl	-4(%ebp), %eax
+	cmpl	12(%ebp), %eax
+	jl	.L9
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE2:
+	.size	printchar, .-printchar
+	.section	.rodata
+.LC6:
+	.string	"0"
+.LC7:
+	.string	"0123456789ABCDEF"
+	.text
+	.globl	itoa
+	.type	itoa, @function
+itoa:
+.LFB3:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$4, %esp
+	cmpl	$0, 8(%ebp)
+	jne	.L11
+	movl	$.LC6, %eax
+	jmp	.L12
+.L11:
+	movl	$30, -4(%ebp)
+	jmp	.L13
+.L15:
+	movl	8(%ebp), %eax
+	cltd
+	idivl	12(%ebp)
+	movl	%edx, %eax
+	movb	.LC7(%eax), %al
+	movl	-4(%ebp), %edx
+	addl	$buf.996, %edx
+	movb	%al, (%edx)
+	decl	-4(%ebp)
+	movl	8(%ebp), %eax
+	cltd
+	idivl	12(%ebp)
+	movl	%eax, 8(%ebp)
+.L13:
+	cmpl	$0, 8(%ebp)
+	je	.L14
+	cmpl	$0, -4(%ebp)
+	jne	.L15
+.L14:
+	movl	-4(%ebp), %eax
+	incl	%eax
+	addl	$buf.996, %eax
+.L12:
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE3:
+	.size	itoa, .-itoa
+	.globl	putnum
+	.type	putnum, @function
+putnum:
+.LFB4:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	pushl	12(%ebp)
+	pushl	8(%ebp)
+	call	itoa
+	addl	$8, %esp
+	pushl	%eax
+	call	print
+	addl	$4, %esp
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE4:
+	.size	putnum, .-putnum
+	.globl	isnum
+	.type	isnum, @function
+isnum:
+.LFB5:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$4, %esp
+	movl	8(%ebp), %eax
+	movb	%al, -4(%ebp)
+	cmpb	$47, -4(%ebp)
+	jle	.L18
+	cmpb	$57, -4(%ebp)
+	jg	.L18
+	movl	$1, %eax
+	jmp	.L20
+.L18:
+	movl	$0, %eax
+.L20:
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE5:
+	.size	isnum, .-isnum
+	.globl	checknum
+	.type	checknum, @function
+checknum:
+.LFB6:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$12, %esp
+	movl	$1, -4(%ebp)
+	movl	$0, -8(%ebp)
+	pushl	8(%ebp)
+	call	strlen
+	addl	$4, %esp
+	movl	%eax, -12(%ebp)
+	jmp	.L22
+.L26:
+	movl	-8(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	movsbl	%al, %eax
+	pushl	%eax
+	call	isnum
+	addl	$4, %esp
+	testl	%eax, %eax
+	jne	.L23
+	movl	$0, -4(%ebp)
+	jmp	.L24
+.L23:
+	movl	-8(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	movsbl	%al, %eax
+	subl	$48, %eax
+	cmpl	%eax, 12(%ebp)
+	jge	.L25
+	movl	$0, -4(%ebp)
+	jmp	.L24
+.L25:
+	incl	-8(%ebp)
+.L22:
+	movl	-8(%ebp), %eax
+	cmpl	-12(%ebp), %eax
+	jl	.L26
+.L24:
+	movl	-4(%ebp), %eax
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE6:
+	.size	checknum, .-checknum
+	.globl	find
+	.type	find, @function
+find:
+.LFB7:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	movl	16(%ebp), %eax
+	movb	%al, -8(%ebp)
+	movl	12(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	testb	%al, %al
+	je	.L29
+	movl	$0, %eax
+	jmp	.L30
+.L29:
+	movl	$0, -4(%ebp)
+.L32:
+	movl	-4(%ebp), %eax
+	cmpl	12(%ebp), %eax
+	jge	.L31
+	movl	-4(%ebp), %eax
+	leal	1(%eax), %edx
+	movl	%edx, -4(%ebp)
+	movl	%eax, %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	cmpb	%al, -8(%ebp)
+	jne	.L32
+.L31:
+	movl	-4(%ebp), %eax
+	decl	%eax
+.L30:
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE7:
+	.size	find, .-find
+	.globl	split
+	.type	split, @function
+split:
+.LFB8:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$16, %esp
+	movl	16(%ebp), %eax
+	movb	$0, (%eax)
+	pushl	8(%ebp)
+	call	strlen
+	addl	$4, %esp
+	movl	%eax, -16(%ebp)
+	pushl	$32
+	pushl	-16(%ebp)
+	pushl	8(%ebp)
+	call	find
+	addl	$12, %esp
+	movl	%eax, -4(%ebp)
+	movl	-16(%ebp), %eax
+	decl	%eax
+	cmpl	%eax, -4(%ebp)
+	jne	.L34
+	movl	-16(%ebp), %eax
+	movl	%eax, -4(%ebp)
+.L34:
+	movl	$0, -8(%ebp)
+	jmp	.L35
+.L36:
+	movl	-8(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movl	-8(%ebp), %ecx
+	movl	12(%ebp), %edx
+	addl	%ecx, %edx
+	movb	(%eax), %al
+	movb	%al, (%edx)
+	incl	-8(%ebp)
+.L35:
+	movl	-8(%ebp), %eax
+	cmpl	-4(%ebp), %eax
+	jl	.L36
+	movl	-8(%ebp), %edx
+	movl	12(%ebp), %eax
+	addl	%edx, %eax
+	movb	$0, (%eax)
+	jmp	.L37
+.L39:
+	incl	-8(%ebp)
+.L37:
+	movl	-8(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	testb	%al, %al
+	je	.L38
+	movl	-8(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	cmpb	$32, %al
+	je	.L39
+.L38:
+	movl	$0, -12(%ebp)
+	jmp	.L40
+.L41:
+	movl	-8(%ebp), %eax
+	leal	1(%eax), %edx
+	movl	%edx, -8(%ebp)
+	movl	%eax, %edx
+	movl	8(%ebp), %eax
+	leal	(%edx,%eax), %ecx
+	movl	-12(%ebp), %eax
+	leal	1(%eax), %edx
+	movl	%edx, -12(%ebp)
+	movl	%eax, %edx
+	movl	16(%ebp), %eax
+	addl	%eax, %edx
+	movb	(%ecx), %al
+	movb	%al, (%edx)
+.L40:
+	movl	-8(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	testb	%al, %al
+	jne	.L41
+	movl	-12(%ebp), %edx
+	movl	16(%ebp), %eax
+	addl	%edx, %eax
+	movb	$0, (%eax)
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE8:
+	.size	split, .-split
+	.globl	strcmp
+	.type	strcmp, @function
+strcmp:
+.LFB9:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$4, %esp
+	movl	$0, -4(%ebp)
+.L45:
+	movl	-4(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	testb	%al, %al
+	je	.L43
+	movl	-4(%ebp), %edx
+	movl	12(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	testb	%al, %al
+	je	.L43
+	movl	-4(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %dl
+	movl	-4(%ebp), %ecx
+	movl	12(%ebp), %eax
+	addl	%ecx, %eax
+	movb	(%eax), %al
+	cmpb	%al, %dl
+	jne	.L47
+	incl	-4(%ebp)
+	jmp	.L45
+.L47:
+	nop
+.L43:
+	movl	-4(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	movsbl	%al, %edx
+	movl	-4(%ebp), %ecx
+	movl	12(%ebp), %eax
+	addl	%ecx, %eax
+	movb	(%eax), %al
+	movsbl	%al, %eax
+	subl	%eax, %edx
+	movl	%edx, %eax
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE9:
+	.size	strcmp, .-strcmp
+	.globl	SizeofSector
+	.data
+	.align 4
+	.type	SizeofSector, @object
+	.size	SizeofSector, 4
+SizeofSector:
+	.long	512
+	.globl	ComlistTitle
+	.section	.rodata
+	.align 4
+.LC8:
+	.string	"pid name cylinder head sector len  addr"
+	.data
+	.align 4
+	.type	ComlistTitle, @object
+	.size	ComlistTitle, 4
+ComlistTitle:
+	.long	.LC8
+	.globl	Comlist
+	.align 32
+	.type	Comlist, @object
+	.size	Comlist, 112
+Comlist:
+	.byte	1
+	.string	"LU.com"
+	.zero	13
+	.byte	0
+	.byte	1
+	.byte	1
+	.value	2
+	.value	-24320
+	.byte	2
+	.string	"LD.com"
+	.zero	13
+	.byte	0
+	.byte	1
+	.byte	3
+	.value	2
+	.value	-23808
+	.byte	3
+	.string	"RU.com"
+	.zero	13
+	.byte	0
+	.byte	1
+	.byte	5
+	.value	2
+	.value	-22784
+	.byte	4
+	.string	"RD.com"
+	.zero	13
+	.byte	0
+	.byte	1
+	.byte	7
+	.value	2
+	.value	-21760
+	.text
+	.globl	readbuff
+	.type	readbuff, @function
+readbuff:
+.LFB10:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	cmpl	$0, 8(%ebp)
+	je	.L62
+	movl	$0, -4(%ebp)
+.L61:
+	call	getch
+	movb	%al, -5(%ebp)
+	cmpb	$13, -5(%ebp)
+	je	.L51
+	cmpb	$8, -5(%ebp)
+	je	.L51
+	cmpb	$3, -5(%ebp)
+	je	.L51
+	cmpb	$31, -5(%ebp)
+	jle	.L63
+.L51:
+	cmpb	$13, -5(%ebp)
+	je	.L64
+	cmpb	$3, -5(%ebp)
+	jne	.L55
+	movl	$0, -4(%ebp)
+	jmp	.L54
+.L55:
+	cmpl	$0, -4(%ebp)
+	jle	.L56
+	movl	12(%ebp), %eax
+	decl	%eax
+	cmpl	%eax, -4(%ebp)
+	jge	.L56
+	cmpb	$8, -5(%ebp)
+	jne	.L57
+	pushl	$8
+	call	putchar
+	addl	$4, %esp
+	pushl	$32
+	call	putchar
+	addl	$4, %esp
+	pushl	$8
+	call	putchar
+	addl	$4, %esp
+	decl	-4(%ebp)
+	jmp	.L52
+.L57:
+	movsbl	-5(%ebp), %eax
+	pushl	%eax
+	call	putchar
+	addl	$4, %esp
+	movl	-4(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%eax, %edx
+	movb	-5(%ebp), %al
+	movb	%al, (%edx)
+	incl	-4(%ebp)
+	jmp	.L52
+.L56:
+	movl	12(%ebp), %eax
+	decl	%eax
+	cmpl	%eax, -4(%ebp)
+	jl	.L59
+	cmpb	$8, -5(%ebp)
+	jne	.L61
+	pushl	$8
+	call	putchar
+	addl	$4, %esp
+	pushl	$32
+	call	putchar
+	addl	$4, %esp
+	pushl	$8
+	call	putchar
+	addl	$4, %esp
+	decl	-4(%ebp)
+	jmp	.L61
+.L59:
+	cmpb	$8, -5(%ebp)
+	je	.L61
+	movsbl	-5(%ebp), %eax
+	pushl	%eax
+	call	putchar
+	addl	$4, %esp
+	movl	-4(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%eax, %edx
+	movb	-5(%ebp), %al
+	movb	%al, (%edx)
+	incl	-4(%ebp)
+	jmp	.L61
+.L63:
+	nop
+.L52:
+	jmp	.L61
+.L64:
+	nop
+.L54:
+	pushl	$13
+	call	putchar
+	addl	$4, %esp
+	pushl	$10
+	call	putchar
+	addl	$4, %esp
+	movl	-4(%ebp), %edx
+	movl	8(%ebp), %eax
+	addl	%edx, %eax
+	movb	$0, (%eax)
+	jmp	.L48
+.L62:
+	nop
+.L48:
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE10:
+	.size	readbuff, .-readbuff
+	.section	.rodata
+.LC9:
+	.string	"OS 17338233"
+.LC10:
+	.string	"Press Enter to go on"
+	.text
+	.globl	Greet
+	.type	Greet, @function
+Greet:
+.LFB11:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$8, %esp
+	call	cls
+	movl	$.LC9, -4(%ebp)
+	movl	$.LC10, -8(%ebp)
+	pushl	-4(%ebp)
+	call	strlen
+	addl	$4, %esp
+	pushl	$32
+	pushl	$10
+	pushl	%eax
+	pushl	-4(%ebp)
+	call	printPos
+	addl	$16, %esp
+	pushl	-8(%ebp)
+	call	strlen
+	addl	$4, %esp
+	pushl	$19
+	pushl	$20
+	pushl	%eax
+	pushl	-8(%ebp)
+	call	printPos
+	addl	$16, %esp
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE11:
+	.size	Greet, .-Greet
+	.section	.rodata
+.LC11:
+	.string	"->"
+	.text
+	.globl	prompt
+	.type	prompt, @function
+prompt:
+.LFB12:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$4, %esp
+	movl	$.LC11, -4(%ebp)
+	pushl	-4(%ebp)
+	call	print
+	addl	$4, %esp
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE12:
+	.size	prompt, .-prompt
+	.section	.rodata
+	.align 4
+.LC12:
+	.string	"Type command to do something.\r\n"
+	.text
+	.globl	printInfo
+	.type	printInfo, @function
+printInfo:
+.LFB13:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	subl	$4, %esp
+	movl	$.LC12, -4(%ebp)
+	pushl	-4(%ebp)
+	call	print
+	addl	$4, %esp
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE13:
+	.size	printInfo, .-printInfo
+	.globl	printDetail
+	.type	printDetail, @function
+printDetail:
+.LFB14:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	movb	8(%ebp), %al
+	movzbl	%al, %eax
+	pushl	$10
+	pushl	%eax
+	call	putnum
+	addl	$8, %esp
+	pushl	$2
+	pushl	$32
+	call	printchar
+	addl	$8, %esp
+	leal	9(%ebp), %eax
+	pushl	%eax
+	call	print
+	addl	$4, %esp
+	pushl	$3
+	pushl	$32
+	call	printchar
+	addl	$8, %esp
+	movb	29(%ebp), %al
+	movzbl	%al, %eax
+	pushl	$10
+	pushl	%eax
+	call	putnum
+	addl	$8, %esp
+	pushl	$6
+	pushl	$32
+	call	printchar
+	addl	$8, %esp
+	movb	30(%ebp), %al
+	movzbl	%al, %eax
+	pushl	$10
+	pushl	%eax
+	call	putnum
+	addl	$8, %esp
+	pushl	$5
+	pushl	$32
+	call	printchar
+	addl	$8, %esp
+	movb	31(%ebp), %al
+	movzbl	%al, %eax
+	pushl	$10
+	pushl	%eax
+	call	putnum
+	addl	$8, %esp
+	pushl	$4
+	pushl	$32
+	call	printchar
+	addl	$8, %esp
+	movl	32(%ebp), %eax
+	movzwl	%ax, %edx
+	movl	SizeofSector, %eax
+	imull	%edx, %eax
+	pushl	$10
+	pushl	%eax
+	call	putnum
+	addl	$8, %esp
+	pushl	$32
+	call	putchar
+	addl	$4, %esp
+	movw	34(%ebp), %ax
+	movzwl	%ax, %eax
+	pushl	$16
+	pushl	%eax
+	call	putnum
+	addl	$8, %esp
+	nop
+	leave
+	.cfi_restore 5
+	.cfi_def_cfa 4, 4
+	ret
+	.cfi_endproc
+.LFE14:
+	.size	printDetail, .-printDetail
+	.section	.rodata
+.LC13:
+	.string	""
+	.string	""
+	.align 4
+.LC15:
+	.string	"Bad command.Please try other.Key in \"help\" for help\r\n"
+.LC0:
+	.string	"help"
+.LC1:
+	.string	"cls"
+.LC2:
+	.string	"shutdown"
+.LC3:
+	.string	"run"
+.LC4:
+	.string	"ls"
+	.align 4
+.LC14:
+	.long	.LC0
+	.long	.LC1
+	.long	.LC2
+	.long	.LC3
+	.long	.LC4
+	.text
+	.globl	shell
+	.type	shell, @function
+shell:
+.LFB15:
+	.cfi_startproc
+	pushl	%ebp
+	.cfi_def_cfa_offset 8
+	.cfi_offset 5, -8
+	movl	%esp, %ebp
+	.cfi_def_cfa_register 5
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	subl	$148, %esp
+	.cfi_offset 7, -12
+	.cfi_offset 6, -16
+	.cfi_offset 3, -20
+	movl	$4, -28(%ebp)
+	leal	-74(%ebp), %edx
+	movl	$30, %ecx
+	movb	$0, %al
+	movl	%edx, %edi
+	rep stosb
+	leal	-104(%ebp), %edx
+	movl	$30, %ecx
+	movb	$0, %al
+	movl	%edx, %edi
+	rep stosb
+	leal	-134(%ebp), %edx
+	movl	$30, %ecx
+	movb	$0, %al
+	movl	%edx, %edi
+	rep stosb
+	movl	$.LC13, -32(%ebp)
+	leal	-156(%ebp), %eax
+	movl	$.LC14, %ebx
+	movl	$5, %edx
+	movl	%eax, %edi
+	movl	%ebx, %esi
+	movl	%edx, %ecx
+	rep movsl
+	call	cls
+	call	printInfo
+.L84:
+	call	prompt
+	pushl	$30
+	leal	-74(%ebp), %eax
+	pushl	%eax
+	call	readbuff
+	addl	$8, %esp
+	pushl	-32(%ebp)
+	leal	-74(%ebp), %eax
+	pushl	%eax
+	call	strcmp
+	addl	$8, %esp
+	testl	%eax, %eax
+	je	.L85
+	movl	-148(%ebp), %eax
+	pushl	%eax
+	leal	-74(%ebp), %eax
+	pushl	%eax
+	call	strcmp
+	addl	$8, %esp
+	testl	%eax, %eax
+	jne	.L72
+	call	shutdown
+	jmp	.L84
+.L72:
+	movl	-152(%ebp), %eax
+	pushl	%eax
+	leal	-74(%ebp), %eax
+	pushl	%eax
+	call	strcmp
+	addl	$8, %esp
+	testl	%eax, %eax
+	jne	.L73
+	call	cls
+	jmp	.L84
+.L73:
+	movl	-156(%ebp), %eax
+	pushl	%eax
+	leal	-74(%ebp), %eax
+	pushl	%eax
+	call	strcmp
+	addl	$8, %esp
+	testl	%eax, %eax
+	jne	.L74
+	call	printInfo
+	jmp	.L84
+.L74:
+	movl	-140(%ebp), %eax
+	pushl	%eax
+	leal	-74(%ebp), %eax
+	pushl	%eax
+	call	strcmp
+	addl	$8, %esp
+	testl	%eax, %eax
+	jne	.L75
+	movl	ComlistTitle, %eax
+	pushl	%eax
+	call	print
+	addl	$4, %esp
+	pushl	$13
+	call	putchar
+	addl	$4, %esp
+	pushl	$10
+	call	putchar
+	addl	$4, %esp
+	movl	$0, -16(%ebp)
+	jmp	.L76
+.L77:
+	movl	-16(%ebp), %edx
+	movl	%edx, %eax
+	addl	%eax, %eax
+	addl	%edx, %eax
+	leal	0(,%eax,8), %ecx
+	addl	%ecx, %eax
+	addl	%edx, %eax
+	addl	$Comlist, %eax
+	subl	$28, %esp
+	movl	%esp, %edx
+	movl	%eax, %ebx
+	movl	$7, %eax
+	movl	%edx, %edi
+	movl	%ebx, %esi
+	movl	%eax, %ecx
+	rep movsl
+	call	printDetail
+	addl	$28, %esp
+	pushl	$13
+	call	putchar
+	addl	$4, %esp
+	pushl	$10
+	call	putchar
+	addl	$4, %esp
+	incl	-16(%ebp)
+.L76:
+	movl	-16(%ebp), %eax
+	cmpl	-28(%ebp), %eax
+	jl	.L77
+	jmp	.L84
+.L75:
+	movl	$0, -20(%ebp)
+	leal	-134(%ebp), %eax
+	pushl	%eax
+	leal	-104(%ebp), %eax
+	pushl	%eax
+	leal	-74(%ebp), %eax
+	pushl	%eax
+	call	split
+	addl	$12, %esp
+	movl	-144(%ebp), %eax
+	pushl	%eax
+	leal	-104(%ebp), %eax
+	pushl	%eax
+	call	strcmp
+	addl	$8, %esp
+	testl	%eax, %eax
+	jne	.L78
+	movb	-134(%ebp), %al
+	testb	%al, %al
+	je	.L79
+	pushl	-28(%ebp)
+	leal	-134(%ebp), %eax
+	pushl	%eax
+	call	checknum
+	addl	$8, %esp
+	testl	%eax, %eax
+	je	.L79
+	movl	$1, %eax
+	jmp	.L80
+.L79:
+	movl	$0, %eax
+.L80:
+	movl	%eax, -20(%ebp)
+.L78:
+	cmpl	$0, -20(%ebp)
+	je	.L81
+	movl	$0, -24(%ebp)
+	leal	-134(%ebp), %eax
+	pushl	%eax
+	call	strlen
+	addl	$4, %esp
+	movl	%eax, -40(%ebp)
+	jmp	.L82
+.L83:
+	leal	-134(%ebp), %edx
+	movl	-24(%ebp), %eax
+	addl	%edx, %eax
+	movb	(%eax), %al
+	movsbl	%al, %eax
+	subl	$49, %eax
+	movl	%eax, -44(%ebp)
+	movl	-44(%ebp), %edx
+	movl	%edx, %eax
+	addl	%eax, %eax
+	addl	%edx, %eax
+	leal	0(,%eax,8), %ecx
+	addl	%ecx, %eax
+	addl	%edx, %eax
+	addl	$Comlist+23, %eax
+	movb	(%eax), %al
+	movzbl	%al, %edi
+	movl	-44(%ebp), %edx
+	movl	%edx, %eax
+	addl	%eax, %eax
+	addl	%edx, %eax
+	leal	0(,%eax,8), %ecx
+	addl	%ecx, %eax
+	addl	%edx, %eax
+	addl	$Comlist+21, %eax
+	movb	(%eax), %al
+	movzbl	%al, %esi
+	movl	-44(%ebp), %edx
+	movl	%edx, %eax
+	addl	%eax, %eax
+	addl	%edx, %eax
+	leal	0(,%eax,8), %ecx
+	addl	%ecx, %eax
+	addl	%edx, %eax
+	addl	$Comlist+22, %eax
+	movb	(%eax), %al
+	movzbl	%al, %ebx
+	movl	-44(%ebp), %edx
+	movl	%edx, %eax
+	addl	%eax, %eax
+	addl	%edx, %eax
+	leal	0(,%eax,8), %ecx
+	addl	%ecx, %eax
+	addl	%edx, %eax
+	addl	$Comlist+24, %eax
+	movl	(%eax), %eax
+	movzbl	%al, %eax
+	movl	%eax, -160(%ebp)
+	movl	-44(%ebp), %edx
+	movl	%edx, %eax
+	addl	%eax, %eax
+	addl	%edx, %eax
+	leal	0(,%eax,8), %ecx
+	addl	%ecx, %eax
+	addl	%edx, %eax
+	addl	$Comlist+26, %eax
+	movw	(%eax), %ax
+	movzwl	%ax, %eax
+	pushl	%edi
+	pushl	%esi
+	pushl	%ebx
+	pushl	-160(%ebp)
+	pushl	%eax
+	call	loadUsrProgram
+	addl	$20, %esp
+	call	cls
+	incl	-24(%ebp)
+.L82:
+	movl	-24(%ebp), %eax
+	cmpl	-40(%ebp), %eax
+	jl	.L83
+	jmp	.L84
+.L81:
+	movl	$.LC15, -36(%ebp)
+	pushl	-36(%ebp)
+	call	print
+	addl	$4, %esp
+	jmp	.L84
+.L85:
+	nop
+	jmp	.L84
+	.cfi_endproc
+.LFE15:
+	.size	shell, .-shell
+	.local	buf.996
+	.comm	buf.996,32,32
+	.ident	"GCC: (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0"
+	.section	.note.GNU-stack,"",@progbits

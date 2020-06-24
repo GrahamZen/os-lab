@@ -1,0 +1,58 @@
+\contentsline {section}{\numberline {1}实验目的}{3}{section.1}%
+\contentsline {section}{\numberline {2}实验要求}{3}{section.2}%
+\contentsline {section}{\numberline {3}实验内容}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}编写用于中断处理的现场保护和现场恢复的汇编过程}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}重写和扩展实验三的的内核程序}{3}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}实现部分基本输入输出库过程}{3}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}执行调用自己设计的库过程的程序}{3}{subsection.3.4}%
+\contentsline {section}{\numberline {4}实验原理}{3}{section.4}%
+\contentsline {subsection}{\numberline {4.1}系统调用(以linux为例)}{3}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}软中断}{4}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}DOS程序的执行}{4}{subsection.4.3}%
+\contentsline {subsubsection}{\numberline {4.3.1}程序的执行过程}{4}{subsubsection.4.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.2}程序段前缀PSP}{4}{subsubsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.3}INT20H(结束程序的另一种方法)}{5}{subsubsection.4.3.3}%
+\contentsline {section}{\numberline {5}实验过程}{5}{section.5}%
+\contentsline {subsection}{\numberline {5.1}修改用户程序的执行方式}{5}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}修改上下文}{5}{subsubsection.5.1.1}%
+\contentsline {subsubsection}{\numberline {5.1.2}在程序段前缀安放返回指令}{6}{subsubsection.5.1.2}%
+\contentsline {subsubsection}{\numberline {5.1.3}将返回时所需的信息压栈}{6}{subsubsection.5.1.3}%
+\contentsline {subsubsection}{\numberline {5.1.4}执行用户程序}{6}{subsubsection.5.1.4}%
+\contentsline {subsubsection}{\numberline {5.1.5}用户程序返回后处理}{6}{subsubsection.5.1.5}%
+\contentsline {subsection}{\numberline {5.2}编写用于中断处理的现场保护和现场恢复的汇编过程}{7}{subsection.5.2}%
+\contentsline {subsubsection}{\numberline {5.2.1}用于保护现场的结构体设计}{7}{subsubsection.5.2.1}%
+\contentsline {subsubsection}{\numberline {5.2.2}save过程-保存中断现场}{8}{subsubsection.5.2.2}%
+\contentsline {subsubsection}{\numberline {5.2.3}restart过程-恢复中断现场}{9}{subsubsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.3}系统调用实现}{10}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}系统调用表定义}{10}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}内核的系统调用过程编写}{10}{subsubsection.5.3.2}%
+\contentsline {paragraph}{系统调用-打印字符}{11}{section*.2}%
+\contentsline {paragraph}{系统调用-获得键盘的一个输入（阻塞）}{11}{section*.3}%
+\contentsline {paragraph}{系统调用-打印彩色字符}{11}{section*.4}%
+\contentsline {subsubsection}{\numberline {5.3.3}系统调用接口编写}{11}{subsubsection.5.3.3}%
+\contentsline {subsection}{\numberline {5.4}实现库过程}{12}{subsection.5.4}%
+\contentsline {subsection}{\numberline {5.5}编写使用库过程的测试程序}{12}{subsection.5.5}%
+\contentsline {subsubsection}{\numberline {5.5.1}atoi函数}{12}{subsubsection.5.5.1}%
+\contentsline {subsubsection}{\numberline {5.5.2}main函数}{13}{subsubsection.5.5.2}%
+\contentsline {subsubsection}{\numberline {5.5.3}将程序放入镜像中测试}{14}{subsubsection.5.5.3}%
+\contentsline {subsection}{\numberline {5.6}INT 22实现和用户程序修改}{14}{subsection.5.6}%
+\contentsline {subsubsection}{\numberline {5.6.1}INT 22实现}{14}{subsubsection.5.6.1}%
+\contentsline {subsubsection}{\numberline {5.6.2}用户程序修改-取消Ouch显示}{15}{subsubsection.5.6.2}%
+\contentsline {subsection}{\numberline {5.7}软盘扇区安排}{15}{subsection.5.7}%
+\contentsline {subsection}{\numberline {5.8}镜像文件生成}{15}{subsection.5.8}%
+\contentsline {section}{\numberline {6}程序使用说明}{16}{section.6}%
+\contentsline {subsection}{\numberline {6.1}实验环境}{16}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}编译方法}{16}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}系统要求}{16}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}编译过程与参数}{16}{subsubsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.3}运行与演示}{16}{subsection.6.3}%
+\contentsline {subsubsection}{\numberline {6.3.1}使用库函数的测试程序}{16}{subsubsection.6.3.1}%
+\contentsline {section}{\numberline {7}总结与讨论}{17}{section.7}%
+\contentsline {subsection}{\numberline {7.1}特色,不足与改进}{17}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}收获}{17}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}遇到的问题}{17}{subsection.7.3}%
+\contentsline {subsubsection}{\numberline {7.3.1}栈不平衡问题}{17}{subsubsection.7.3.1}%
+\contentsline {subsubsection}{\numberline {7.3.2}标号问题}{17}{subsubsection.7.3.2}%
+\contentsline {subsubsection}{\numberline {7.3.3}键盘中断导致的死机}{17}{subsubsection.7.3.3}%
+\contentsline {subsubsection}{\numberline {7.3.4}软中断嵌套时钟中断}{18}{subsubsection.7.3.4}%
+\contentsline {subsection}{\numberline {7.4}感想}{18}{subsection.7.4}%

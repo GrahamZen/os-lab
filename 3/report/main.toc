@@ -1,0 +1,72 @@
+\contentsline {section}{\numberline {1}实验目的}{3}{section.1}%
+\contentsline {section}{\numberline {2}实验要求}{3}{section.2}%
+\contentsline {section}{\numberline {3}实验内容}{3}{section.3}%
+\contentsline {subsection}{\numberline {3.1}分析C程序编译获得的符号列表文档}{3}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}汇编和c程序混合编程}{3}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}扩展内核程序}{3}{subsection.3.3}%
+\contentsline {section}{\numberline {4}实验原理}{4}{section.4}%
+\contentsline {subsection}{\numberline {4.1}实模式和保护模式}{4}{subsection.4.1}%
+\contentsline {paragraph}{实模式}{4}{section*.2}%
+\contentsline {paragraph}{实模式的缺陷}{4}{section*.3}%
+\contentsline {paragraph}{保护模式}{4}{section*.4}%
+\contentsline {paragraph}{虚拟8086模式}{4}{section*.5}%
+\contentsline {subsection}{\numberline {4.2}函数调用约定}{4}{subsection.4.2}%
+\contentsline {paragraph}{X86调用约定}{4}{section*.6}%
+\contentsline {subsection}{\numberline {4.3}保护模式的运行模式反转}{5}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}混合注意事项}{5}{subsection.4.4}%
+\contentsline {section}{\numberline {5}实验过程}{6}{section.5}%
+\contentsline {subsection}{\numberline {5.1}混合编程}{6}{subsection.5.1}%
+\contentsline {subsubsection}{\numberline {5.1.1}分析c程序汇编结果}{6}{subsubsection.5.1.1}%
+\contentsline {paragraph}{全局变量}{7}{section*.8}%
+\contentsline {paragraph}{函数调用}{7}{section*.9}%
+\contentsline {subsubsection}{\numberline {5.1.2}混合编程程序设计}{7}{subsubsection.5.1.2}%
+\contentsline {subsection}{\numberline {5.2}修改引导程序}{8}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}设计库过程}{9}{subsection.5.3}%
+\contentsline {subsubsection}{\numberline {5.3.1}获得输入}{9}{subsubsection.5.3.1}%
+\contentsline {subsubsection}{\numberline {5.3.2}拆分字符串}{9}{subsubsection.5.3.2}%
+\contentsline {subsubsection}{\numberline {5.3.3}比较字符串}{9}{subsubsection.5.3.3}%
+\contentsline {subsubsection}{\numberline {5.3.4}计算字符串长度}{9}{subsubsection.5.3.4}%
+\contentsline {subsubsection}{\numberline {5.3.5}输出字符串}{9}{subsubsection.5.3.5}%
+\contentsline {subsubsection}{\numberline {5.3.6}输出字符}{10}{subsubsection.5.3.6}%
+\contentsline {subsubsection}{\numberline {5.3.7}清屏}{10}{subsubsection.5.3.7}%
+\contentsline {subsection}{\numberline {5.4}监控程序修改}{10}{subsection.5.4}%
+\contentsline {subsubsection}{\numberline {5.4.1}获得输入--readbuff函数}{10}{subsubsection.5.4.1}%
+\contentsline {paragraph}{循环体内}{11}{section*.11}%
+\contentsline {subparagraph}{缓冲区中有字符(串)}{11}{section*.12}%
+\contentsline {subparagraph}{缓冲区已满}{11}{section*.13}%
+\contentsline {subparagraph}{缓冲区为空}{11}{section*.14}%
+\contentsline {paragraph}{离开循环体}{11}{section*.15}%
+\contentsline {subsubsection}{\numberline {5.4.2}其他功能}{12}{subsubsection.5.4.2}%
+\contentsline {subsubsection}{\numberline {5.4.3}交互模块--shell函数}{12}{subsubsection.5.4.3}%
+\contentsline {subsubsection}{\numberline {5.4.4}交互逻辑}{12}{subsubsection.5.4.4}%
+\contentsline {subsection}{\numberline {5.5}设计用户程序的加载方式}{13}{subsection.5.5}%
+\contentsline {subsubsection}{\numberline {5.5.1}运行用户程序--loadUsrProgram}{13}{subsubsection.5.5.1}%
+\contentsline {paragraph}{堆栈的对齐}{13}{section*.16}%
+\contentsline {paragraph}{远调用}{13}{section*.17}%
+\contentsline {paragraph}{段寄存器的保护}{13}{section*.18}%
+\contentsline {subsection}{\numberline {5.6}修改用户程序}{14}{subsection.5.6}%
+\contentsline {subsection}{\numberline {5.7}软盘扇区安排}{14}{subsection.5.7}%
+\contentsline {subsection}{\numberline {5.8}镜像文件生成}{14}{subsection.5.8}%
+\contentsline {section}{\numberline {6}程序使用说明}{14}{section.6}%
+\contentsline {subsection}{\numberline {6.1}实验环境}{14}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}VMware Workstation 15}{14}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}nasm 2.13.02}{14}{subsubsection.6.1.2}%
+\contentsline {subsubsection}{\numberline {6.1.3}wsl}{15}{subsubsection.6.1.3}%
+\contentsline {subsubsection}{\numberline {6.1.4}VSCode 1.44.2}{15}{subsubsection.6.1.4}%
+\contentsline {subsection}{\numberline {6.2}编译方法}{15}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}系统要求}{15}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}编译过程与参数}{15}{subsubsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.3}运行与演示}{15}{subsection.6.3}%
+\contentsline {section}{\numberline {7}总结与讨论}{16}{section.7}%
+\contentsline {subsection}{\numberline {7.1}特色,不足与改进}{16}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}收获}{16}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}感想}{16}{subsection.7.3}%
+\contentsline {paragraph}{}{16}{section*.21}%
+\contentsline {paragraph}{}{16}{section*.22}%
+\contentsline {paragraph}{}{16}{section*.23}%
+\contentsline {paragraph}{}{16}{section*.24}%
+\contentsline {paragraph}{}{16}{section*.25}%
+\contentsline {paragraph}{}{17}{section*.26}%
+\contentsline {paragraph}{调试过程}{17}{section*.27}%
+\contentsline {paragraph}{}{17}{section*.28}%
+\contentsline {section}{\numberline {8}附录}{20}{section.8}%
