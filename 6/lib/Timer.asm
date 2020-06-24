@@ -5,6 +5,7 @@ extern printDate
 extern Timesave
 extern Timerestart
 extern schedule
+extern timeFlag
 
 
 ; 时钟中断处理程序
@@ -16,8 +17,27 @@ extern schedule
 Timer:
 	nop
 	cli
+    cmp word[cs:timeFlag], 0
+    je QuitTimer
 	call Timesave
-	; call schedule
+CheckEscKey:
+    mov ah, 01h                    ; 功能号：查询键盘缓冲区但不等待
+    int 16h
+    jz ContinucSchedule            ; 无键盘按下，继续调度
+    mov ah, 0                      ; 功能号：查询键盘输入
+    int 16h
+    cmp al, 27                     ; 是否按下ESC
+    jne ContinucSchedule           ; 若按下的不是ESC，继续调度
+
+    ; call goBackToKernel            ; 清理PCB
+    jmp PcbRestart                 ; 通过恢复返回内核
+
+ContinucSchedule:
+	call dword schedule
+PcbRestart:
+                        ; 恢复寄存器
+
+QuitTimer:
     pusha
     push gs
     push ds
@@ -29,7 +49,6 @@ Timer:
 	dec byte [count]		; 递减计数变量
 	jnz Exit			; >0：跳转
 	mov byte[count],delay		; 重置计数变量=初值delay
-    
     mov ah,[color]
 	dec byte[color]
 	jz restoreColor
@@ -49,7 +68,6 @@ Exit:
     pop ds
     pop gs
     popa
-	call Timerestart
 	sti
 	iret			; 从中断返回
 

@@ -34,10 +34,6 @@ typedef struct RegisterImage{
 RegisterImage q[SCHEDULE_QUEUE_LEN];
 RegisterImage KernalContext,TimeContext;
 
-void create_proc(){
-	
-}
-
 RegisterImage* getRegisterImage(){
     return &KernalContext;
 }
@@ -48,7 +44,36 @@ RegisterImage* getTimeRegisterImage(){
 	    return &q[current_process_id];
 }
 
-void pcbSchedule() {
+void pcb_init() {
+	for(int i = 0; i < SCHEDULE_QUEUE_LEN; i++) {
+		q[i].pid = i;
+		q[i].state = 0;
+		q[i].ax = 0;
+		q[i].cx = 0;
+		q[i].dx = 0;
+		q[i].bx = 0;
+		q[i].sp = 0xffff;
+		q[i].bp = 0;
+		q[i].si = 0;
+		q[i].di = 0;
+		q[i].ds = 0;
+		q[i].es = 0;
+		q[i].fs = 0;
+		q[i].gs = 0xB800;
+		q[i].ss = 0;
+		q[i].ip = 0x100;
+		q[i].cs = 0;
+		q[i].flags = 512;
+	}
+}
+
+
+void create_proc(){
+	
+}
+
+//前置条件：timeFlag=1
+void schedule() {
 	uint16_t previous_id = current_process_id;
 	getTimeRegisterImage()->state = P_READY;
 	do {
