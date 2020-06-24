@@ -16,9 +16,9 @@ global Timerestart
 global syscaller
 global sys_int22
 global sys_putchar
+global current_process_id,timeFlag
 
 extern getTimeRegisterImage,getRegisterImage
-extern qb,qe
 extern sysc_int22
 
 extern Timer
