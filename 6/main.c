@@ -5,8 +5,8 @@ extern void runUsrProgram(const struct sector *);
 extern void setTimeIV();
 extern void setDateIV();
 extern void kernelInit();
+extern void int8();
 
-int prev_multproc=0;
 
 void shell()
 {
@@ -25,6 +25,7 @@ void shell()
     char target[MAX_BUFLEN] = {0};
     char *emptystr = "\0";
     char *mul_proc_msg = "all processes were killed.";
+    char *ComlistTitle = "pid name cylinder head sector len  addr  seg";
     char *commands[] = {"help", "cls", "shutdown", "run", "bat", "ls"};
     cls();
     printInfo();
@@ -33,13 +34,6 @@ void shell()
         kernelInit();
         prompt();
         readbuff(userbuff, MAX_BUFLEN);
-        if(prev_multproc==1){
-            cls();
-            puts(mul_proc_msg);
-            newline;
-            setDateIV();
-            prev_multproc = 0;
-        }
         if (strcmp(userbuff, emptystr) == 0)
         {
             continue;
@@ -81,6 +75,7 @@ void shell()
                         setTimeIV();
                         runUsrProgram(&Comlist[pid]);
                         cls();
+                        setDateIV();
                     }
                 }
             }
@@ -88,6 +83,8 @@ void shell()
             {
                 pcb_init();
                 int valid = target[0] != '\0' && checknum(target, usrprogNum);
+                putnum(valid, 10);
+                newline;
                 if (valid)
                 {
                     for (int i = 0, len = strlen(target); i < len; i++)
@@ -96,10 +93,14 @@ void shell()
                         loadUsrProgram(&Comlist[pid]);
                         create_proc(&Comlist[pid]);
                     }
+                    timeFlag = 1;
+                    setTimeIV();
+                    int8();
+                    cls();
+                    puts(mul_proc_msg);
+                    newline;
+                    setDateIV();
                 }
-                timeFlag = 1;
-                setTimeIV();
-                prev_multproc = 1;
             }
             else
             {
