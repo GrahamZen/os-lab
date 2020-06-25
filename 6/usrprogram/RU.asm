@@ -141,7 +141,7 @@ dl2ul:
       jmp show
 	
 show:	
-	call cls
+	; call cls
       xor ax,ax                
       mov ax,word[x]
 	mov bx,80

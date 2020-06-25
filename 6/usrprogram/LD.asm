@@ -7,7 +7,7 @@ top equ 11
 right equ 40   
 bottom equ 25
 ori_x equ 19
-ori_y equ 0
+ori_y equ 78
 jmp near start
 
 start:
@@ -33,7 +33,6 @@ loop1:
     jnz loop1
 	mov word[count],delay
 	mov word[dcount],ddelay
-
     mov al,1
     cmp al,byte[rdul]
 	jz  DnRt
@@ -141,7 +140,6 @@ dl2ul:
       jmp show
 	
 show:	
-	call cls
       xor ax,ax                
       mov ax,word[x]
 	mov bx,80
@@ -162,7 +160,6 @@ draw:
 	mov ah, 0
 	int 16h
 	cmp al,27
-	;je OffsetOfKernel
 	je _end
 	
 

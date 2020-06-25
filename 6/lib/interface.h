@@ -1,6 +1,10 @@
 #include "mystring.h"
 #define OffsetOfUserPrg 0x100
-#define SegOfUserPrg 0x1000
+#define SegOfUserPrg1 0x1000
+#define SegOfUserPrg2 0x2000
+#define SegOfUserPrg3 0x3000
+#define SegOfUserPrg4 0x4000
+#define SegOfUserPrg5 0x5000
 #define newline putchar('\r');putchar('\n')
 
 enum Date
@@ -27,11 +31,11 @@ struct sector
 
 const struct sector Comlist[] = {
 //  柱面号  磁头号 起始扇区号 扇区数 内存的偏移地址             pid   name  
-{    0,      1,      1,      2, OffsetOfUserPrg, SegOfUserPrg,1, "LU.com  ",},
-{    0,      1,      3,      2, OffsetOfUserPrg, SegOfUserPrg,2, "LD.com  ",},
-{    0,      1,      5,      2, OffsetOfUserPrg, SegOfUserPrg,3, "RU.com  ",},
-{    0,      1,      7,      2, OffsetOfUserPrg, SegOfUserPrg,4, "RD.com  ",},
-{    0,      1,      9,      8, OffsetOfUserPrg, SegOfUserPrg,5, "test.com",}
+{    0,      1,      1,      2, OffsetOfUserPrg, SegOfUserPrg1,1, "LU.com  ",},
+{    0,      1,      3,      2, OffsetOfUserPrg, SegOfUserPrg2,2, "LD.com  ",},
+{    0,      1,      5,      2, OffsetOfUserPrg, SegOfUserPrg3,3, "RU.com  ",},
+{    0,      1,      7,      2, OffsetOfUserPrg, SegOfUserPrg4,4, "RD.com  ",},
+{    0,      1,      9,      8, OffsetOfUserPrg, SegOfUserPrg5,5, "test.com",}
 };
 
 void readbuff(char *buff, int maxLength)

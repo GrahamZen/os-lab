@@ -160,7 +160,6 @@ draw:
 	mov ah, 0
 	int 16h
 	cmp al,27
-	; je OffsetOfKernel
 	je _end
 	
 
@@ -183,7 +182,6 @@ cls:
     ret
 
 datadef:	
-	c dw 1000
     count dw delay
     dcount dw ddelay
     rdul db Dn_Rt        
@@ -194,6 +192,5 @@ datadef:
 hint:
 	 db 'LU is running.press Esc to return'
 hintlen  equ ($-hint)
-
 times 1022-($-$$) db 0
 			   db 0x55,0xaa
