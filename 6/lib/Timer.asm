@@ -3,11 +3,10 @@ global Timer
 global TimerWithDate
 extern printDate
 extern Timesave
-extern Timerestart
 extern schedule
-extern timeFlag,current_process_id
+extern timeFlag,curr_proc_id
 extern getTimeRegisterImage
-%macro  PCB_RESTART 0              ; 宏：从PCB中恢复寄存器的值
+%macro  PCB_RESTART 0
     call dword getTimeRegisterImage
     mov si, ax
     mov ax, [cs:si+0]
@@ -22,12 +21,12 @@ extern getTimeRegisterImage
     mov fs, [cs:si+20]
     mov gs, [cs:si+22]
     mov ss, [cs:si+24]
-    add sp, 16+6                   ; 恢复正确的sp
-    push word[cs:si+30]            ; 新进程flags
-    push word[cs:si+28]            ; 新进程cs
-    push word[cs:si+26]            ; 新进程ip
-    push word[cs:si+12]
-    pop si                         ; 恢复si
+    add sp, 16+6                   ;pusha+ip+cs+flags                            
+    push word[cs:si+30]            ;flags
+    push word[cs:si+28]            ;cs
+    push word[cs:si+26]            ;ip
+    push word[cs:si+12]            ;si
+    pop si
 %endmacro
 
 ; 时钟中断处理程序
@@ -39,9 +38,8 @@ extern getTimeRegisterImage
 Timer:
 	nop
 	cli
-    ; pushf
     cmp word[cs:timeFlag], 0
-    je QuitTimer
+    je showWheel
     push ss
     push gs
     push fs
@@ -57,43 +55,39 @@ Timer:
     push ax
 
     mov ax, cs
-    mov ds, ax                     ; ds=cs，因为函数中可能要用到ds
-    mov es, ax                     ; es=ax，原因同上。注意此时尚未发生栈切换
+    mov ds, ax
+    mov es, ax
 	call Timesave
 
-CheckEscKey:
-    mov ah, 01h                    ; 功能号：查询键盘缓冲区但不等待
-    int 16h
-    jz ContinucSchedule            ; 无键盘按下，继续调度
-    mov ah, 0                      ; 功能号：查询键盘输入
-    int 16h
-    cmp al, 27                     ; 是否按下ESC
-    jne ContinucSchedule           ; 若按下的不是ESC，继续调度
-    mov ax, 0
-    mov [timeFlag], ax
-    mov [current_process_id], ax
-    ; call goBackToKernel            ; 清理PCB
-    jmp PcbRestart                 ; 通过恢复返回内核
+; checkEsc:
+;     mov ah, 01h
+;     int 16h
+;     jz continue
+;     mov ah, 0
+;     int 16h
+;     cmp al, 27
+;     jne continue
+;     mov ax, 0
+;     mov [timeFlag], ax
+;     mov [curr_proc_id], ax
+;     jmp restart
 
-ContinucSchedule:
+continue:
 	call dword schedule
-PcbRestart:
+restart:
 	PCB_RESTART
-
-QuitTimer:
+showWheel:
+    pushf
     pusha
     push gs
-    push ds
-    mov ax,cs
-    mov ds,ax
 	mov	ax,0B800h		; 文本窗口显存起始地址
 	mov	gs,ax		; GS = B800h
 
-	dec byte [count]		; 递减计数变量
+	dec byte [cs:count]		; 递减计数变量
 	jnz Exit			; >0：跳转
-	mov byte[count],delay		; 重置计数变量=初值delay
-    mov ah,[color]
-	dec byte[color]
+	mov byte[cs:count],delay		; 重置计数变量=初值delay
+    mov ah,[cs:color]
+	dec byte[cs:color]
 	jz restoreColor
 draw:
     mov si, wheel
@@ -108,10 +102,9 @@ Exit:
 	mov al,20h			; AL = EOI
 	out 20h,al			; 发送EOI到主8529A
 	out 0A0h,al			; 发送EOI到从8529A
-    pop ds
     pop gs
     popa
-    ; popf
+    popf
 	sti
 	iret			; 从中断返回
 
@@ -155,7 +148,6 @@ Exit1:
     pop ds
     pop gs
     popa
-	; call Timerestart
 	sti
 	iret			; 从中断返回
 

@@ -5,7 +5,6 @@ extern void runUsrProgram(const struct sector *);
 extern void setTimeIV();
 extern void setDateIV();
 extern void kernelInit();
-extern void int8();
 
 
 void shell()
@@ -83,8 +82,6 @@ void shell()
             {
                 pcb_init();
                 int valid = target[0] != '\0' && checknum(target, usrprogNum);
-                putnum(valid, 10);
-                newline;
                 if (valid)
                 {
                     for (int i = 0, len = strlen(target); i < len; i++)

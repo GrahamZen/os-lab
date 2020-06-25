@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-uint16_t current_process_id=0,timeFlag=0;
+uint16_t curr_proc_id=0,timeFlag=0;
 
 enum PCB_STATE {P_NEW, P_READY, P_RUNNING, P_BLOCKED, P_EXIT};
 
@@ -38,13 +38,13 @@ RegisterImage* getRegisterImage(){
     return &KernalContext;
 }
 RegisterImage* getTimeRegisterImage(){
-	    return &q[current_process_id];
+	    return &q[curr_proc_id];
 }
 
 void pcb_init() {
 	for(int i = 0; i < SCHEDULE_QUEUE_LEN; i++) {
 		q[i].pid = i;
-		q[i].state = 0;
+		q[i].state = P_NEW;
 		q[i].ax = 0;
 		q[i].cx = 0;
 		q[i].dx = 0;
@@ -82,16 +82,20 @@ void create_proc(const struct sector *target){
 
 //前置条件：timeFlag=1
 void schedule() {
-	uint16_t previous_id = current_process_id;
+	uint16_t prev_id = curr_proc_id;
 	getTimeRegisterImage()->state = P_READY;
 	do {
-		current_process_id++;
-		if(current_process_id >= SCHEDULE_QUEUE_LEN) current_process_id = 1;
+		curr_proc_id++;
+		if(curr_proc_id >= SCHEDULE_QUEUE_LEN) curr_proc_id = 1;
 	} while(getTimeRegisterImage()->state != P_READY);
 	getTimeRegisterImage()->state = P_RUNNING;
 
-	// 没有发现其它处于就绪态的进程，返回内核
-	// if(current_process_id == previous_id) {
-	// 	goBackToKernel();
-	// }
+}
+
+void goBackKernel(){
+	if(timeFlag==1){
+		q[curr_proc_id].state = P_EXIT;
+		int8();
+	}
+	return;
 }

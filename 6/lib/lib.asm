@@ -7,18 +7,17 @@ global putchar
 global cls
 global getch
 global shutdown
-global loadUsrProgram
-global runUsrProgram
+global loadUsrProgram,runUsrProgram,afterRun
 global getDateInfo
 global save
 global restart
 global Timesave
-global Timerestart
 global syscaller
 global sys_int22
 global sys_putchar
+global int8
 global setTimeIV,setDateIV
-global current_process_id,timeFlag
+global curr_proc_id,timeFlag
 
 extern getTimeRegisterImage,getRegisterImage
 extern sysc_int22
@@ -86,10 +85,9 @@ shutdown:
 
 loadUsrProgram:    
     pusha
-    push ds
     push es       
     mov bp, sp
-    mov bx, [bp+24]        ; 程序信息结构体指针
+    mov bx, [bp+22]        ; 程序信息结构体指针
     mov ax, [bx+20]        ; 存放数据的段地址
     mov es, ax             ; 用es才能跨段读取,es:bx是读入的数据所在内存地址
     mov ah,2               ; 功能号
@@ -100,23 +98,18 @@ loadUsrProgram:
     mov cl, [bx+8]         ; 起始扇区号 ; 起始编号为1
     mov bx, [bx+16]        ; 存放数据的内存偏移地址
     int 13H                ; 调用读磁盘BIOS的13h功能
-    push gs
-    mov ax, cs
-    mov gs, ax
-    mov word[gs:savesp],sp   ; 保存当前的栈顶，用于返回后恢复
-    mov sp,0xff00               ; 设置用户程序的栈顶
+    mov word[cs:savesp],sp ; 保存当前的栈顶，用于返回后恢复
+    mov sp,0xff00          ; 设置用户程序的栈顶
     mov bx, es
     mov ss, bx             ; 设置现在的栈段和es一致(以后push和pop就会操作用户程序的栈)
-    mov ax,[gs:codeOfInt20]; 用ax保存int 20这个语句
+    mov ax,[cs:codeOfInt20]; 用ax保存int 20这个语句
     mov [es:0],ax          ; 在es:0(用户程序所在段首)放置int 20
-    push cs                ; 
-    push afterRun          ; 将cs ip先后压栈，返回时可以远返回retf
+    ; push cs                ; 
+    ; push afterRun          ; 将cs ip先后压栈，返回时可以远返回retf
     push dword 0           ; 压栈0，用户程序如果使用ret就会触发ip=0的操作，开始执行从es:0开始的语句
     mov bx, cs
     mov ss, bx
-    mov sp,[savesp]
-    pop gs
-    pop ds
+    mov sp,[cs:savesp]
     pop es
     popa
     retf
@@ -127,17 +120,17 @@ runUsrProgram:
     mov bx, [bp+20]        ; 程序信息结构体指针
     mov ax, cs
     mov gs, ax
-    mov word[gs:savesp],sp   ; 保存当前的栈顶，用于返回后恢复
+    mov word[gs:savesp],sp ; 保存当前的栈顶，用于返回后恢复
     mov ax,0xff00          ; 用户程序的栈顶为0xff00
-    mov sp, ax              ; 设置用户程序的栈顶
-    sub sp, 8
+    mov sp, ax             ; 设置用户程序的栈顶
+    sub sp, 4
     mov bx, [bx+20]
     mov es, bx             ; 用es才能跨段读取,es:bx是读入的数据所在内存地址
     mov ds, bx             ; 设置用户程序的数据段和es一致
     mov ss, bx             ; 设置现在的栈段和es一致(以后push和pop就会操作用户程序的栈)
-    mov word[gs:program+2], bx
-    
-    jmp far [gs:program]   ;远转移至gs:program所指的位置
+    push bx
+    push 0x100
+    retf                   ;远返回至bx:100                 
 
 afterRun:
     mov ax,cs
@@ -276,40 +269,15 @@ Timesave:
     popa
     ret
 
-Timerestart:
-    call dword getTimeRegisterImage
-    mov si, ax
-    mov ax, [cs:si+0]
-    mov cx, [cs:si+2]
-    mov bx, [cs:si+6]
-    mov sp, [cs:si+8]
-    mov di, [cs:si+14]
-    mov ds, [cs:si+16]
-    mov es, [cs:si+18]
-    mov fs, [cs:si+20]
-    mov gs, [cs:si+22]
-    mov ss, [cs:si+24]
-    ; add sp, 4*2                   ; 恢复正确的sp(原返回地址，ip,cs,flags)
-    mov bp,sp
-
-    mov dx, word[cs:si+30]            ; 新进程flags
-    mov [bp+6],dx
-    mov dx, word[cs:si+28]            ; 新进程cs
-    mov [bp+4],dx
-    mov dx, word[cs:si+26]            ; 新进程ip
-    mov [bp+2],dx
-    
-    mov bp, [cs:si+10]
-    mov dx, [cs:si+4]
-    mov si, [cs:si+12]
-    
-    ret
-
 setTimeIV:
     VECTOR_IN 08h,Timer
     retf
 setDateIV:
     VECTOR_IN 08h,TimerWithDate
+    retf
+
+int8:
+    int 8h
     retf
 
 syscaller:;不切换段
@@ -371,6 +339,5 @@ sys_table:
     dd sys_putchar,sys_getch,sys_putchar_c
 
 datadef:
-program dw 0x100,0
 retval dw 0xff00
 savesp dw 0xff00
