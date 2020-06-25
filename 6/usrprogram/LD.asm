@@ -7,7 +7,7 @@ top equ 11
 right equ 40   
 bottom equ 25
 ori_x equ 19
-ori_y equ 78
+ori_y equ 38
 jmp near start
 
 start:

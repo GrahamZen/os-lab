@@ -1,6 +1,7 @@
 BITS 16
 %include "./lib/header.inc"
 
+global kernelInit
 global printPos
 global putchar
 global cls
@@ -16,6 +17,7 @@ global Timerestart
 global syscaller
 global sys_int22
 global sys_putchar
+global setTimeIV,setDateIV
 global current_process_id,timeFlag
 
 extern getTimeRegisterImage,getRegisterImage
@@ -23,6 +25,17 @@ extern sysc_int22
 
 extern Timer
 extern TimerWithDate
+
+kernelInit:
+    push ax
+    mov ax,cs
+    mov ss,ax
+    mov ds,ax
+    mov es,ax
+    mov fs,ax
+    mov gs,ax
+    pop ax
+    retf
 
 cls:
     pusha
@@ -75,7 +88,6 @@ loadUsrProgram:
     pusha
     push ds
     push es       
-    VECTOR_IN 08h,Timer
     mov bp, sp
     mov bx, [bp+24]        ; 程序信息结构体指针
     mov ax, [bx+20]        ; 存放数据的段地址
@@ -88,6 +100,22 @@ loadUsrProgram:
     mov cl, [bx+8]         ; 起始扇区号 ; 起始编号为1
     mov bx, [bx+16]        ; 存放数据的内存偏移地址
     int 13H                ; 调用读磁盘BIOS的13h功能
+    push gs
+    mov ax, cs
+    mov gs, ax
+    mov word[gs:savesp],sp   ; 保存当前的栈顶，用于返回后恢复
+    mov sp,0xff00               ; 设置用户程序的栈顶
+    mov bx, es
+    mov ss, bx             ; 设置现在的栈段和es一致(以后push和pop就会操作用户程序的栈)
+    mov ax,[gs:codeOfInt20]; 用ax保存int 20这个语句
+    mov [es:0],ax          ; 在es:0(用户程序所在段首)放置int 20
+    push cs                ; 
+    push afterRun          ; 将cs ip先后压栈，返回时可以远返回retf
+    push dword 0           ; 压栈0，用户程序如果使用ret就会触发ip=0的操作，开始执行从es:0开始的语句
+    mov bx, cs
+    mov ss, bx
+    mov sp,[savesp]
+    pop gs
     pop ds
     pop es
     popa
@@ -100,18 +128,15 @@ runUsrProgram:
     mov ax, cs
     mov gs, ax
     mov word[gs:savesp],sp   ; 保存当前的栈顶，用于返回后恢复
-    mov ax,0xffff          ; 用户程序的栈顶为0xffff
-    mov sp,ax              ; 设置用户程序的栈顶
+    mov ax,0xff00          ; 用户程序的栈顶为0xff00
+    mov sp, ax              ; 设置用户程序的栈顶
+    sub sp, 8
     mov bx, [bx+20]
     mov es, bx             ; 用es才能跨段读取,es:bx是读入的数据所在内存地址
     mov ds, bx             ; 设置用户程序的数据段和es一致
     mov ss, bx             ; 设置现在的栈段和es一致(以后push和pop就会操作用户程序的栈)
     mov word[gs:program+2], bx
-    mov ax,[gs:codeOfInt20]; 用ax保存int 20这个语句
-    mov [es:0],ax          ; 在es:0(用户程序所在段首)放置int 20
-    push cs                ; 
-    push afterRun          ; 将cs ip先后压栈，返回时可以远返回retf
-    push dword 0           ; 压栈0，用户程序如果使用ret就会触发ip=0的操作，开始执行从es:0开始的语句
+    
     jmp far [gs:program]   ;远转移至gs:program所指的位置
 
 afterRun:
@@ -123,7 +148,6 @@ afterRun:
     mov gs,ax
     mov ax,[savesp]
     mov sp, ax
-    VECTOR_IN 08h,TimerWithDate
     popa
     retf
 
@@ -213,40 +237,42 @@ restart:
 Timesave:
     pusha
     mov bp, sp
+    add bp,16+2
     call dword getTimeRegisterImage
     mov di, ax
-    mov ax, [bp]         ;di
-    mov [cs:di+14], ax   ;
-    mov ax, [bp+2]       ;si
-    mov [cs:di+12], ax   ;
-    mov ax, [bp+4]       ;bp
-    mov [cs:di+10], ax   ;
-    mov ax, [bp+6]       ;sp
-    mov [cs:di+8], ax    ;
-    mov ax, [bp+8]       ;dx
-    mov [cs:di+6], ax    ;
-    mov ax, [bp+10]      ;cx
-    mov [cs:di+4], ax    ;
-    mov ax, [bp+12]      ;bx
-    mov [cs:di+2], ax    ;
-    mov ax, [bp+14]      ;ax
-    mov [cs:di], ax      ;
-    mov ax, ds           ;ds
-    mov [cs:di+16], ax   ;
-    mov ax, es           ;es
-    mov [cs:di+18], ax   ;
-    mov ax, fs           ;fs
-    mov [cs:di+20], ax   ;
-    mov ax, gs           ;gs
-    mov [cs:di+22], ax   ;
-    mov ax, ss           ;ss
-    mov [cs:di+24], ax   ;
-    mov ax, [bp+18]      ;ip
-    mov [cs:di+26], ax   ;
-    mov ax, [bp+20]      ;cs
-    mov [cs:di+28], ax   ;
-    mov ax, [bp+22]      ;flags
-    mov [cs:di+30], ax   ;
+
+    mov ax, [bp]
+    mov [cs:di], ax
+    mov ax, [bp+2]
+    mov [cs:di+2], ax
+    mov ax, [bp+4]
+    mov [cs:di+4], ax
+    mov ax, [bp+6]
+    mov [cs:di+6], ax
+    mov ax, [bp+8]
+    mov [cs:di+8], ax
+    mov ax, [bp+10]
+    mov [cs:di+10], ax
+    mov ax, [bp+12]
+    mov [cs:di+12], ax
+    mov ax, [bp+14]
+    mov [cs:di+14], ax
+    mov ax, [bp+16]
+    mov [cs:di+16], ax
+    mov ax, [bp+18]
+    mov [cs:di+18], ax
+    mov ax, [bp+20]
+    mov [cs:di+20], ax
+    mov ax, [bp+22]
+    mov [cs:di+22], ax
+    mov ax, [bp+24]
+    mov [cs:di+24], ax
+    mov ax, [bp+26]
+    mov [cs:di+26], ax
+    mov ax, [bp+28]
+    mov [cs:di+28], ax
+    mov ax, [bp+30]
+    mov [cs:di+30], ax
     popa
     ret
 
@@ -278,6 +304,13 @@ Timerestart:
     mov si, [cs:si+12]
     
     ret
+
+setTimeIV:
+    VECTOR_IN 08h,Timer
+    retf
+setDateIV:
+    VECTOR_IN 08h,TimerWithDate
+    retf
 
 syscaller:;不切换段
     nop
@@ -339,7 +372,5 @@ sys_table:
 
 datadef:
 program dw 0x100,0
-retval dw 0xffff
-savesp dw 0xffff
-current_process_id dw 0
-timeFlag dw 0
+retval dw 0xff00
+savesp dw 0xff00

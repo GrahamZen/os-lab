@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-extern uint16_t current_process_id,timeFlag;
+uint16_t current_process_id=0,timeFlag=0;
 
 enum PCB_STATE {P_NEW, P_READY, P_RUNNING, P_BLOCKED, P_EXIT};
 
@@ -38,9 +38,6 @@ RegisterImage* getRegisterImage(){
     return &KernalContext;
 }
 RegisterImage* getTimeRegisterImage(){
-	if(timeFlag==0)
-	    return &TimeContext;
-	else
 	    return &q[current_process_id];
 }
 
@@ -52,7 +49,7 @@ void pcb_init() {
 		q[i].cx = 0;
 		q[i].dx = 0;
 		q[i].bx = 0;
-		q[i].sp = 0xffff;
+		q[i].sp = 0xff00;
 		q[i].bp = 0;
 		q[i].si = 0;
 		q[i].di = 0;
@@ -68,8 +65,19 @@ void pcb_init() {
 }
 
 
-void create_proc(){
-	
+void create_proc(const struct sector *target){
+	int id = target->pid;
+	q[id].pid = id;
+	// q[id].sp = 0xff00;
+	q[id].ds = target->seg;
+	q[id].es = target->seg;
+	q[id].fs = target->seg;
+	q[id].gs = 0xB800;
+	q[id].ss = target->seg;
+	q[id].ip = 0x100;
+	q[id].cs = target->seg;
+	q[id].flags = 512;
+	q[id].state = P_READY;
 }
 
 //前置条件：timeFlag=1
