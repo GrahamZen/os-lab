@@ -6,6 +6,7 @@
 #define SegOfUserPrg4 0x4000
 #define SegOfUserPrg5 0x5000
 #define newline putchar('\r');putchar('\n')
+extern void int8();
 
 enum Date
 {
@@ -16,7 +17,6 @@ extern uint8_t getDateInfo(enum Date func);
 
 
 int SizeofSector = 512;
-char *ComlistTitle = "pid name cylinder head sector len  addr  seg";
 struct sector
 {
     int cylinder;

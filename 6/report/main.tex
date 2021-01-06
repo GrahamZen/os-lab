@@ -22,8 +22,7 @@
 %----------------------------------------------------------------------------------------
 
 \documentclass[a4paper, 11pt]{article} % Font size (can be 10pt, 11pt or 12pt) and paper size (remove a4paper for US letter paper)
-\usepackage[table]{xcolor}
-\usepackage{cite}
+\usepackage[table,xcdraw]{xcolor}\usepackage{cite}
 \usepackage{fontspec}
 \definecolor{keycolor}{RGB}{172, 42, 42}
 \definecolor{mbleu}{RGB}{64,96,127}
@@ -166,180 +165,176 @@ frame=trbl%
 
 % 问题、方法、实验目的、意义
 \begin{enumerate}
-  \item 学习掌握PC系统的软中断指令
-  \item 掌握操作系统内核对用户提供服务的系统调用程序设计方法
-  \item 掌握C语言的库设计方法
-  \item 掌握用户程序请求系统服务的方法
+  \item 学习多道程序与CPU分时技术
+  \item 掌握操作系统内核的二态进程模型设计与实现方法
+  \item 掌握进程表示方法
+  \item 掌握时间片轮转调度的实现
 \end{enumerate}
 
 
 \section{实验要求}
 
 \begin{enumerate}
-  \item 了解PC系统的软中断指令的原理
-  \item 掌握x86汇编语言软中断的响应处理编程方法
-  \item 扩展实验四的的内核程序，增加输入输出服务的系统调用。
-  \item C语言的库设计，实现putch()、getch()、printf()、scanf()等基本输入输出库过程。
+  \item 了解操作系统内核的二态进程模型
+  \item 扩展实验五的的内核程序，增加一条命令可同时创建多个进程分时运行，增加进程控制块和进程表数据结构。
+  \item 修改时钟中断处理程序，调用时间片轮转调度算法。
+  \item 设计实现时间片轮转调度算法，每次时钟中断，就切换进程，实现进程轮流运行。
+  \item 修改save()和restart()两个汇编过程，利用进程控制块保存当前被中断进程的现场，并从进程控制块恢复下一个进程的现场。
 \end{enumerate}
 
 \section{实验内容}
 
 % 输入、输出形式，使用的数据结构，算法的描述，算法正确性说明，算法分析，算法实现所需变量，没有代码
-\subsection{编写用于中断处理的现场保护和现场恢复的汇编过程}
+\subsection{设计PCB数据结构}
 
-修改实验4的内核代码，先编写save()和restart()两个汇编过程，分别用于中断处理的现场保护和现场恢复，内核定义一个保护现场的数据结构，以后，处理程序的开头都调用save()保存中断现场，
-处理完后都用restart()恢复中断现场。
+修改实验5的内核代码，定义进程控制块PCB类型，包括进程号、程序名、进程内存地址信息、CPU寄存器保存区、进程状态等必要数据项，再定义一个PCB数组，最大进程数为10个。
 
-\subsection{重写和扩展实验三的的内核程序}
+\subsection{设计多进程命令}
 
-内核增加int 20h、int 21h和int 22h软中断的处理程序，其中，int 20h用于用户程序结束是返回内核准备接受命令的状态；int 21h用于系统调用，并实现3-5个简单系统调用功能；
-int22h功能未定，先实现为屏幕某处显示INT22H。
+扩展实验五的的内核程序，增加一条命令可同时执行多个用户程序，内核加载这些程序，创建多个进程，再实现分时运行
 
-\subsection{实现部分基本输入输出库过程}
+\subsection{修改时钟中断处理程序}
 
-进行C语言的库设计，实现putch()、getch()、gets()、puts()、printf()、scanf()等基本输入输出库过程，汇编产生libs.obj。
-
-\subsection{执行调用自己设计的库过程的程序}
-
-利用自己设计的C库libs.obj，编写一个使用这些库函数的C语言用户程序，再编译,在与libs.obj一起链接，产生COM程序。增加内核命令执行这个程序。
-
+修改时钟中断处理程序，保留无敌风火轮显示，而且增加调用进程调度过程
 
 \section{实验原理}
-\subsection{系统调用(以linux为例)}
-内核提供用户空间程序与内核空间进行交互的一套标准接口，这些接口让用户态程序能受限访问硬件设备，比如申请系统资源，操作设备读写，创建新进程等。用户空间发生请求，内核空间负责执行，这些接口便是用户空间和内核空间共同识别的桥梁，这里提到两个字“受限”，是由于为了保证内核稳定性，而不能让用户空间程序随意更改系统，必须是内核对外开放的且满足权限的程序才能调用相应接口。
-在用户空间和内核空间之间，有一个叫做Syscall(系统调用, system call)的中间层，是连接用户态和内核态的桥梁。这样即提高了内核的安全型，也便于移植，只需实现同一套接口即可。Linux系统，用户空间通过向内核空间发出Syscall，产生软中断，从而让程序陷入内核态，执行相应的操作。对于每个系统调用都会有一个对应的系统调用号，比很多操作系统要少很多。
-安全性与稳定性：内核驻留在受保护的地址空间，用户空间程序无法直接执行内核代码，也无法访问内核数据，通过系统调用
-性能：Linux上下文切换时间很短，以及系统调用处理过程非常精简，内核优化得好，所以性能上往往比很多其他操作系统执行要好。\cite{gityuan2016}
+\subsection{两进程模型}
+在任何时刻，一个进程要么正在执行，要么未执行，因而可以构建最简单的模型。进程可处于以下两种状态之一：运行态或未运行态，
+如图3．5（a）所示。操作系统创建一个新进程时，它将该进程以未运行态加入系统，操作系统知道这个进程的存在，并正在等待执行机会。时而不时地，
+当前正在运行的进程会被中断，此时操作系统中的分派器部分将选择一个新进程运行。前一个进程从运行态转换为未运行态，后一个进程则转换为运行态。\cite{gityuan2016}
 
-\subsection{软中断}
-当执行特定指令或满足特定条件时，处理器本身会请求软件中断。 每个软件中断信号都与特定的中断处理程序相关联。
-软件中断可能是由于执行特殊指令而引起的，该指令在设计上会在执行时调用中断。 此类指令的功能类似于子例程调用，并用于多种目的，例如请求操作系统服务和与设备驱动程序进行交互（例如，读取或写入存储介质）。
-程序执行错误也可能会意外触发软件中断。 这些中断通常称为陷阱或异常。 例如，如果处理器执行除数等于零的除法指令，则会抛出“除零”异常（请求软件中断）。通常，操作系统将捕获并处理此异常。\cite{wiki:Interrupt}
+\subsubsection{进程的创建}
+进程的创建将一个新进程添加到正被管理的进程集时，操作系统需要建立用于管理该进程的数据结构（见33节），并在内存中给它分配地址空间，这些行为构成了一个新进程的创建过程。
+触发进程创建的事件通常有4个，如表3．1所示。在批处理环境中，响应作业提交时会创建进程；在交互环境中，当新用户试图登录时会创建进程。不论哪种情况，操作系统都负责新进程的创建工作。
+操作系统也可能会代表应用程序创建进程。例如，如果用户请求打印一个文件，则操作系统可以创建一个管理打印的进程，进而使请求进程可以继续执行，与完成打印任务的时间无关。
+\subsubsection{进程终止}
+表\ref{processhalt}概括了进程终止的典型原因。任何一个计算机系统都必须为进程提供表示其完成的方法，批处理作业中应包含一个Halt指令或其他操作系统显式服务调用来终止。
+在前一种情况下，Halt指令将产生一个中断，警告操作系统一个进程己经完成。对交互式应用程序，用户的行为将指出何时进程完成。例如，在分时系统中，
+当用户退出系统或关闭自己的终端时，该用户的进程将被终止。在个人计算机或工作站中，用户可以结束一个应用程序（如字处理或电子表格）。所有这些行为最终将导致给操作系统发出一个服务请求，
+以终止发出请求的进程。此外，很多错误和故障条件会导致进程终止。表32列出了一些最常见的识别条件最后，在有些操作系统中，进程可被创建它的进程终止，或在父进程终止时而终止。
 
-\subsection{DOS程序的执行} 
-
-\subsubsection{程序的执行过程} 
-在DOS提示符，如C:>下，键入一个可执行文件名（COM、EXE）后，在运行该程序前，DOS完成以下工作： \cite{csdn2010}
-\begin{enumerate}
-  \item 从磁盘中找到该文件。 
-  \item 检测用户可用内存，在可用内存的低地址段建立一个程序段前缀(PSP,Program Segment Prefix)。 
-  \item 把该文件从磁盘上装入内存中PSP的后面。 
-  \item DOS设置DS、ES的值等于PSP的段地址。如果该程序为COM文件，则把CS、SS的值也设置为PSP的段地址。
-  \item 开始执行该文件的第一条指令。
-\end{enumerate}
-
-\subsubsection{程序段前缀PSP} 
-DOS运行程序时，需要该程序的一系列参数（如，程序结束地址、Ctrl\_Break处理程序的地址、出错处理地址等），另外还需要一个磁盘读、写的缓冲区，这个参数区和缓冲区，称为"程序段前缀（PSP）"。 PSP共有256字节，它是运行程序时，由DOS自动在内存中建立的。 PSP的结构下图所示：
-注意：
-\begin{enumerate}
-  \item PSP起始两字节存放"INT 20H"指令的机器码(CDH 20H),该指令使程序返回DOS；
-  \item EXE程序刚运行时,DS和ES指向PSP首址,即INT20H指令的机器码:COM程序刚运行时,DS,ES,CS,SS均指向PSP首址。
-\end{enumerate}
-在PSP结构中，我们只关心前两个字节，它是指令"INT 20H"的机器码（CDH、20H）。 
-
-\subsubsection{INT20H(结束程序的另一种方法)} 
-\begin{enumerate}
-  \item 在程序执行前，DS=程序段前缀PSP的段地址，把PSP的段地址和0值推入堆栈。 
-  \item RET指令从堆栈中取出两字，送CS和IP，因此，RET指令执行时，CS=PSP的段地址，IP=0000H。CPU转移到PSP处执行。
-  \item PSP处的指令是INT 20H，它的功能是结束程序并返回DOS，因此，该程序能正确返回DOS。
-\end{enumerate}
-
+% Please add the following required packages to your document preamble:
+% \usepackage[table,xcdraw]{xcolor}
+% If you use beamer only pass "xcolor=table" option, i.e. \documentclass[xcolor=table]{beamer}
+\begin{table}[]
+  \caption{导致进程终止的原因}
+  \label{tab:process_halt}
+  \begin{tabular}{
+  >{\columncolor[HTML]{FFFFFF}}l 
+  >{\columncolor[HTML]{FFFFFF}}l }
+  事件         & 说明                                                                                                                                                  \\
+  正常完成       & {\color[HTML]{333333} 进程自行执行一个操作系统服务调用，表示它己经结束运行}                                                                                                   \\
+  超过时限       & {\color[HTML]{333333} \begin{tabular}[c]{@{}l@{}}进程运行时间超过规定的时限。可以测量多种类型的时间，包括总运行时间\\ （“挂钟时间”）、花费在执行上的时间，以及对于交互进程从上一次\\ 用户输入到当前时刻的时间总量\end{tabular}} \\
+  无可用内存      & {\color[HTML]{333333} 系统无法满足进程需要的内存空间}                                                                                                              \\
+  超出范围       & {\color[HTML]{333333} 进程试图访问不允许访问的内存单元}                                                                                                             \\
+  保护错误       & \begin{tabular}[c]{@{}l@{}}进程试图使用不允许使用的资源或文件，或试图以一种不正确的方式使用，\\ 如往只读文件中写\end{tabular}                                                                \\
+  算术错误       & 进程试图进行被禁止的计算，如除以零或存储大于硬件可以接纳的数字                                                                                                                     \\
+  时间超出       & 进程等待某一事件发生的时间超过了规定的最大值                                                                                                                              \\
+  I/O失败      & \begin{tabular}[c]{@{}l@{}}在输入或输出期间发生错误，如找不到文件、在超过规定的最多努力次数后仍然\\ 读/写失败（如遇到磁带上的一个坏区时）或无效操作（如从行式打印机中读）\end{tabular}                                   \\
+  无效指令       & 进程试图执行一个不存在的指令（通常是由于转移到了数据区并企图执行数据）                                                                                                                 \\
+  特权指令       & 进程试图使用为操作系统保留的指令                                                                                                                                    \\
+  数据误用       & 错误类型或未初始化的一块数据                                                                                                                                      \\
+  操作员或操作系统干涉 & 由于某些原因，操作员或操作系统终止进程（如出现死锁时）                                                                                                                         \\
+  父进程终止      & 当一个父进程终止时，操作系统可能会自动终止该进程的所有子进程                                                                                                                      \\
+  父进程请求      & 父进程通常具有终止其任何子进程的权力                                                                                                                                 
+  \end{tabular}
+  \end{table}
 \section{实验过程}
 
 本次实验流程如下：
 \begin{enumerate}
   \item 修改用户程序的执行方式
-  \item 编写用于中断处理的现场保护和现场恢复的汇编过程
-  \item 设计软中断程序用于系统调用
-  \item 实现库过程
-  \item 编写使用库过程的测试程序
-  \item 实现INT 22
-  \item 去掉用户程序触碰键盘显示OUCH!的功能
-  \item 生成镜像，在虚拟机中加载
+  \item 设计PCB数据结构
+  \item 修改save和restart过程
+  \item 修改时钟中断程序
+  \item 修改shell的运行逻辑（增加多进程处理）
 \end{enumerate}
 
 \subsection{修改用户程序的执行方式}
-在之前的实验中，我执行程序的流程一直是如下：
+在上次的实验中，我已经修改了执行程序为如下方式：
 \begin{enumerate}
   \item 将用户程序所在的镜像加载进内存中
   \item 将用户程序的地址信息放进一个内存块中
-  \item 利用上一步的内存块，用远调用（call far）跳入用户程序第一条指令的地址
-  \item 用户程序执行结束后用原返回（retf）回到加载程序的子过程（loadUsrProgram）
-  \item 恢复内核上下文
+  \item 预先埋好用户程序返回所需的信息
+  \item 利用上一步的内存块，用远跳转（jmp far）跳入用户程序第一条指令的地址
+  \item 用户程序执行结束后用20号中断程序转去执行后处理程序（恢复内核段寄存器等）
   \item 返回内核shell
 \end{enumerate}
-但是这么做基本等同于将用户程序当做一个内核的函数来处理，执行用户的程序和预处理和后处理并没有很好的解耦。
-因此这次实验中，我将其修改为类似dos的做法。具体的修改过程如下。
-\subsubsection{修改上下文}
-用户除了系统调用外就不应该使用内核的任何内存和资源。因此首先要修改栈寄存器，但是内核的栈也需要保存，之后需要修改各个段寄存器。
-\subsubsection{在程序段前缀安放返回指令}
-因为程序是com格式的，如果想要让用户在编写程序时不需要考虑如何返回，只需要在程序的开头放入int 20h，然后将返回所需的数据预先放入栈中即可，
-用户程序可以通过int 20h的系统调用来回到内核，结束程序。有一点需要注意的是，这里可以使用ax存放int 20h这条指令，是因为int 20h的机器指令不超过一个字，如果超过了，会被截断。因此，
-如果需要加入多个指令，超过了一个字，则需要遍历对应的内存，将其放入用户栈。
-\subsubsection{将返回时所需的信息压栈}
-返回时需要cs和ip用于远跳转。然后还需要预先压入一个双字0，用于c程序的双字返回。因为用户程序的ret执行之后就不需要管理数据区了，
-所以不需要修改。
-\subsubsection{执行用户程序}
-这部分和之前的相同，用jmpf间接远跳转，地址以及预先放入对应的数据块。注意由于ds已经在修改上下文时被修改，这里需要借另一个寄存器用于寻址。
-我使用了gs。
-\subsubsection{用户程序返回后处理}
-将各个段地址恢复，就可以返回了。
-代码如下：
+
+这次实验中，由于需要增加一种运行程序的方式，原来的执行方式需要分开，即分为加载程序和运行程序两个过程，什么时候执行由内核处理。
+\subsubsection{加载模块}
+由于加载完成后，不应该限制用何种方式运行程序。因此加载过程需要将所有运行程序前的准备都完成。具体有三点：
+\begin{enumerate}
+  \item 将用户程序所在的镜像通过13号中断加载进内存中
+  \item 在用户程序头放入int 20h
+  \item 在栈中预先埋好地址用于几次返回
+\end{enumerate}
+在上次的代码的基础上，首先将int 13h之前的语句分出。由于使用用户栈需要修改ss，在ss修改为用户程序所在段后，就不能使用内核栈了，因此我使用内核的内存来保存需要的信息（内核的sp等）
+其中还需要使用es等段寄存器用于修改用户程序信息，返回前需要恢复。代码如下：
+
 \begin{lstlisting}[language={[x86masm]Assembler},label=loadUsrProgram,caption=loadUsrProgram]
   loadUsrProgram:    
   pusha
-  push ds
   push es       
   mov bp, sp
-  mov bx, [bp+24]        ; 用户程序的段地址
-  mov word[program+2],bx
-  mov es, bx             ; 用es才能跨段读取,es:bx是读入的数据所在内存地址
-  mov bx, [bp+28]        ; 偏移地址; 存放数据的内存偏移地址
+  mov bx, [bp+22]        ; 程序信息结构体指针
+  mov ax, [bx+20]        ; 存放数据的段地址
+  mov es, ax             ; 用es才能跨段读取,es:bx是读入的数据所在内存地址
   mov ah,2               ; 功能号
-  mov al,[bp+32]         ; 扇区数
+  mov al,[bx+12]         ; 扇区数
   mov dl,0               ; 驱动器号; 软盘为0，硬盘和U盘为80H
-  mov dh,[bp+36]         ; 磁头号; 起始编号为0
-  mov ch,[bp+40]         ; 柱面号; 起始编号为0
-  mov cl,[bp+44]         ; 起始扇区号 ; 起始编号为1
+  mov dh, [bx+4]         ; 磁头号; 起始编号为0
+  mov ch, [bx]           ; 柱面号; 起始编号为0
+  mov cl, [bx+8]         ; 起始扇区号 ; 起始编号为1
+  mov bx, [bx+16]        ; 存放数据的内存偏移地址
   int 13H                ; 调用读磁盘BIOS的13h功能
-  mov word[program],0x100
-runUsrProgram:
-  mov ax, cs
-  mov gs, ax
-  mov ax,0xffff          ; 用户程序的栈顶为0xffff
-  mov cx,sp              ; 保存当前的栈顶，用于返回后恢复
-  mov sp,ax              ; 设置用户程序的栈顶
-  mov ax,[codeOfInt20]   ; 用ax保存int 20这个语句
-  mov bx, es             ; 用户程序的段地址
-  mov ds,bx              ; 设置用户程序的数据段和es一致
-  mov ss,bx              ; 设置现在的栈段和es一致(以后操作用户程序的栈)
+  mov word[cs:savesp],sp ; 保存当前的栈顶，用于返回后恢复
+  mov sp,0xff00          ; 设置用户程序的栈顶
+  mov bx, es
+  mov ss, bx             ; 设置现在的栈段和es一致(以后push和pop就会操作用户程序的栈)
+  mov ax,[cs:codeOfInt20]; 用ax保存int 20这个语句
   mov [es:0],ax          ; 在es:0(用户程序所在段首)放置int 20
-  push cx                ; 将内核栈顶偏移放入，用于返回后恢复
   push cs                ; 
   push afterRun          ; 将cs ip先后压栈，返回时可以远返回retf
-  push dword 0            ; 压栈0，用户程序如果使用ret就会回到0处执行
-  jmp far [gs:program]   ;远转移至gs:program所指的位置
-afterRun:
-  mov ax,cs
-  mov ss,ax
-  mov es,ax
-  mov fs,ax
-  mov gs,ax
+  push dword 0           ; 压栈0，用户程序如果使用ret就会触发ip=0的操作，开始执行从es:0开始的语句
+  mov bx, cs
+  mov ss, bx
+  mov sp,[cs:savesp]
   pop es
-  pop ds
   popa
   retf
-
-codeOfInt20:
-  int 20h
 \end{lstlisting}
 
-\subsection{编写用于中断处理的现场保护和现场恢复的汇编过程}
+\subsubsection{运行模块}
+运行模块是用于批处理或者执行单个程序的，将各个段寄存器和栈寄存器设置好，压入地址并远返回即可转到用户程序的100h处开始执行。代码如下：
+\begin{lstlisting}[language={[x86masm]Assembler},label=runUsrProgram,caption=runUsrProgram]
+  runUsrProgram:
+  pusha
+  mov bp, sp
+  mov bx, [bp+20]        ; 程序信息结构体指针
+  mov ax, cs
+  mov gs, ax
+  mov word[gs:savesp],sp ; 保存当前的栈顶，用于返回后恢复
+  mov ax,0xff00          ; 用户程序的栈顶为0xff00
+  mov sp, ax             ; 设置用户程序的栈顶
+  sub sp, 8
+  mov bx, [bx+20]
+  mov es, bx             ; 用es才能跨段读取,es:bx是读入的数据所在内存地址
+  mov ds, bx             ; 设置用户程序的数据段和es一致
+  mov ss, bx             ; 设置现在的栈段和es一致(以后push和pop就会操作用户程序的栈)
+  push bx
+  push 0x100
+  retf                   ;远返回至bx:100
+\end{lstlisting}
 
-\subsubsection{用于保护现场的结构体设计}
-为了重用代码，保护现场被设计为软中断和进程切换都需要用到的过程。其中需要设计一个专用的结构体。由于目前运行的进程只有一个，设计好结构体后，
-此次实验中只需要构建一个实例。结构体声明和寄存器映像的定义如下：
+
+\subsection{设计PCB数据结构}
+
+\subsubsection{PCB结构体设计}
+上次实验中已经设计了寄存器映像，这次只需要加上pid和state就可以，pid是进程号，state用于记录该进程的状态，目前只有新进程、就绪和运行三种是可用的,新进程意味着该PCB未被使用。代码如下：
 \begin{lstlisting}[language={c},label=RegisterImage,caption=struct RegisterImage]
+  enum PCB_STATE {P_NEW, P_READY, P_RUNNING, P_BLOCKED, P_EXIT};
+  
   typedef struct RegisterImage{
     uint16_t ax;     // 0
     uint16_t cx;     // 2
@@ -357,308 +352,226 @@ codeOfInt20:
     uint16_t ip;     // 26
     uint16_t cs;     // 28
     uint16_t flags;  // 30
-  } RegisterImage;
-
-RegisterImage KernalContext;
-RegisterImage* getRegisterImage(){
-    return &KernalContext;
+    int pid;
+    int state;
+    } RegisterImage;
+  \end{lstlisting}
+\subsubsection{PCB创建和初始化}
+为了避免调度时使用未初始化的PCB，我在进入内核时将统一进行初始化。代码如下：
+由于本次实验同一个程序多次运行并不能看出，因此每个程序在内核中只允许拥有一个PCB。为了实现多进程，还需要有创建进程对应PCB的函数和索引PCB的函数。需要一个全局变量curr_proc_id用来记录当前运行的进程id，代码如下：
+\begin{lstlisting}[language={c},label=RegisterImage,caption=struct RegisterImage]
+void pcb_init() {
+  for(int i = 0; i < SCHEDULE_QUEUE_LEN; i++) {
+    q[i].pid = i;
+    q[i].state = P_NEW;
+    q[i].ax = 0;
+    q[i].cx = 0;
+    q[i].dx = 0;
+    q[i].bx = 0;
+    q[i].sp = 0xff00;
+    q[i].bp = 0;
+    q[i].si = 0;
+    q[i].di = 0;
+    q[i].ds = 0;
+    q[i].es = 0;
+    q[i].fs = 0;
+    q[i].gs = 0xB800;
+    q[i].ss = 0;
+    q[i].ip = 0x100;
+    q[i].cs = 0;
+    q[i].flags = 512;
+  }
+  RegisterImage* getTimeRegisterImage(){
+	    return &q[curr_proc_id];
+  }
+}
+  
+void create_proc(const struct sector *target){
+  int id = target->pid;
+  q[id].pid = id;
+  q[id].ds = target->seg;
+  q[id].es = target->seg;
+  q[id].fs = target->seg;
+  q[id].gs = 0xB800;
+  q[id].ss = target->seg;
+  q[id].ip = 0x100;
+  q[id].cs = target->seg;
+  q[id].flags = 512;
+  q[id].state = P_READY;
 }
 \end{lstlisting}
-最后还声明了一个用于获取寄存器映像的函数，在之后的实验中的进程调度时可以用来获得当前需要切换到的进程。
-\subsubsection{save过程-保存中断现场}
-保存中断现场的前置条件是软中断被调用，此时已有三个对象被放入栈中，先后顺序分别是flags，cs，ip，总共6个字节，
-为了保证结构体内的信息是调用save前的信息，在进入save之后我使用pusha将所有8个寄存器依次保存。然后调用上文的getRegisterImage，
-获得指针，将各个寄存器依次写入结构体即可，由于mov不允许两个操作数都为内存地址，我使用了ax用来中转，di用于基址寻址，
-其中要保存的ip，cs，flags是调用中断时自动压入的，无法通过其他渠道获得。代码如下：
-\begin{lstlisting}[language={[x86masm]Assembler},label=save,caption=save过程]
-  save:
-  pusha
-  mov bp, sp
-  call dword getRegisterImage
-  mov di, ax
-  mov ax, [bp]         ;di
-  mov [cs:di+14], ax   ;
-  mov ax, [bp+2]       ;si
-  mov [cs:di+12], ax   ;
-  mov ax, [bp+4]       ;bp
-  mov [cs:di+10], ax   ;
-  mov ax, [bp+6]       ;sp
-  mov [cs:di+8], ax    ;
-  mov ax, [bp+8]       ;dx
-  mov [cs:di+6], ax    ;
-  mov ax, [bp+10]      ;cx
-  mov [cs:di+4], ax    ;
-  mov ax, [bp+12]      ;bx
-  mov [cs:di+2], ax    ;
-  mov ax, [bp+14]      ;ax
-  mov [cs:di], ax      ;
-  mov ax, ds           ;ds
-  mov [cs:di+16], ax   ;
-  mov ax, es           ;es
-  mov [cs:di+18], ax   ;
-  mov ax, fs           ;fs
-  mov [cs:di+20], ax   ;
-  mov ax, gs           ;gs
-  mov [cs:di+22], ax   ;
-  mov ax, ss           ;ss
-  mov [cs:di+24], ax   ;
-  mov ax, [bp+18]      ;ip
-  mov [cs:di+26], ax   ;
-  mov ax, [bp+20]      ;cs
-  mov [cs:di+28], ax   ;
-  mov ax, [bp+22]      ;flags
-  mov [cs:di+30], ax   ;
-  popa
-  ret
-\end{lstlisting}
-要注意的是，虽然上下文保存好了，但是程序还是应该保存好当前的现场，因为系统调用可能使用参数。
 
-\subsubsection{restart过程-恢复中断现场}
-恢复现场的前置条件是进行了保护现场过程，因此之前一定发生了中断（可能是时钟中断），当前的栈里只有四个对象，
-按地址从低到高的顺序分别是：调用restart的语句的下一条指令的地址(近返回地址)，中断时被压入的ip,cs,flags。
-用寄存器映像的内容分别修改各个通用寄存器和段寄存器，然后便是返回的重点。当前过程返回后，下一次返回时使用的是中断专用的返回，
-需要栈里面有IP,CS,flags,然后iret调用时用flags修改标志寄存器，然后修改ip，cs，最后出栈三个元素。
-而恢复中断现场需要修改这三个对象，才能保证restart之后iret可以正常返回，因此需要一个寄存器（si）用于基址寻址寄存器映像，
-栈基址寄存器（bp）用来寻址栈空间，一个通用寄存器（dx）用于中转数据，这三个寄存器都需要最后再恢复。代码如下：
-\begin{lstlisting}[language={[x86masm]Assembler},label=restart,caption=restart过程]
-  call dword getRegisterImage
+\subsubsection{调度过程}
+调度使用最简单的线性搜索方式，从当前PCB开始依次往后搜索，如果找到就绪的，将其转为运行态，当前的转为就绪态，即可返回。0号P作为内核的PCB。代码如下：
+\begin{lstlisting}[language={c},label=RegisterImage,caption=struct RegisterImage]
+  //前置条件：timeFlag=1
+  void schedule() {
+    uint16_t prev_id = curr_proc_id;
+    getTimeRegisterImage()->state = P_READY;
+    do {
+      curr_proc_id++;
+      if(curr_proc_id >= SCHEDULE_QUEUE_LEN) curr_proc_id = 1;
+    } while(getTimeRegisterImage()->state != P_READY);
+    getTimeRegisterImage()->state = P_RUNNING;
+  }
+}
+\end{lstlisting}
+
+\subsection{中断保护过程}
+虽然上次实验中实现了save和restart过程，但是上次并没有考虑多进程的问题，主要是多进程涉及到了跨段和栈寄存器的变化。有些寻址会出错。因此需要做一些修改。
+\subsubsection{save过程}
+和上次实验基本一样，唯一的区别是将压栈寄存器的工作交给时钟中断处理程序，因为如果让save过程来保存，意味着save之前不可以做任何事情，包括切换段等。由于save过程中需要得到内核段中的数据（PCB块地址等），需要修改ds和es。
+代码如下：
+\begin{lstlisting}[language={[x86masm]Assembler},label=save,caption=中断保护的部分代码]
+  push ss
+  push gs
+  push fs
+  push es
+  push ds
+  push di
+  push si
+  push bp
+  push sp
+  push bx
+  push dx
+  push cx
+  push ax
+
+  mov ax, cs
+  mov ds, ax                     
+  mov es, ax                     
+	call Timesave
+\end{lstlisting}
+Timesave和上次相比去掉了pusha，保存的顺序按照上面代码中寄存器压栈的顺序。
+
+\subsubsection{restart过程}
+restart过程是最重要的，恢复了进程的信息之后应该立刻跳转到对应的地址执行，因为中间无论执行任何代码，内核中都有可能修改进程的信息，尤其是段寄存器。因此上次实验中将其设计为函数的做法是不能用于多进程的。这次我将其设计成宏。
+因为restart的前置条件是在时钟中断离开。所以restart之前栈里还有8个通用寄存器和中断压栈的三个字（ip，cs，flags），在恢复所有寄存器之后，应该将sp恢复。然后将这次将要跳转的三个字依次压栈，最后恢复用于转移数据的si寄存器。
+代码如下：
+\begin{lstlisting}[language={[x86masm]Assembler},label=save,caption=中断保护的部分代码]
+%macro  PCB_RESTART 0
+  call dword getTimeRegisterImage
   mov si, ax
   mov ax, [cs:si+0]
   mov cx, [cs:si+2]
+  mov dx, [cs:si+4]
   mov bx, [cs:si+6]
   mov sp, [cs:si+8]
+  mov bp, [cs:si+10]
   mov di, [cs:si+14]
   mov ds, [cs:si+16]
   mov es, [cs:si+18]
   mov fs, [cs:si+20]
   mov gs, [cs:si+22]
   mov ss, [cs:si+24]
-  mov bp,sp
-
-  mov dx, word[cs:si+30]            ; 新进程flags
-  mov [bp+6],dx
-  mov dx, word[cs:si+28]            ; 新进程cs
-  mov [bp+4],dx
-  mov dx, word[cs:si+26]            ; 新进程ip
-  mov [bp+2],dx
-  
-  mov bp, [cs:si+10]
-  mov dx, [cs:si+4]
-  mov si, [cs:si+12]
-  
-  ret
+  add sp, 16+6                   ;pusha+ip+cs+flags                            
+  push word[cs:si+30]            ;flags
+  push word[cs:si+28]            ;cs
+  push word[cs:si+26]            ;ip
+  push word[cs:si+12]            ;si
+  pop si
 %endmacro
 \end{lstlisting}
 
-\subsection{系统调用实现}
+\subsection{修改时钟中断处理程序}
+在实验四中我设计了两个版本的中断处理程序，一个用于执行用户程序，一个用于内核shell，因此增加多进程功能只需要修改时钟中断程序。为了保留风火轮，执行风火轮的代码放在程序最后执行。执行前保护现场，执行后恢复。
+多进程的思路是通过时钟中断离开当前进程，保存进程信息，用调度程序切换进程块号，再用新进程块恢复寄存器等信息。
 
-\subsubsection{系统调用表定义}
-系统调用利用的是21号中断向量，在用户程序用ah指定了中断号后，触发21号中断，在内核的中断表中跳转到中断程序，执行后返回即可。这里为了保护上下文，可以使用save和restart。由于restart会恢复上下文，如果中断处理程序有返回值在ax，
-因为可能被覆盖，我安排了一个双字用于保存。而ds也会被恢复，为了使用内核的地址空间寻址数据，需要先保存ds，取出ax后返回。代码如下：
-\begin{lstlisting}[language={[x86masm]Assembler},label=syscaller,caption=syscaller]
-  syscaller:;不切换段
-  cli
-  call save ;保存现场
-  mov si,cs ;si=0
-  mov ds,si ;ds=cs=0
-  mov si,ax ;功能号
-  shr si,8
-  add si,si
-  add si,si
-  call [sys_table+si]
-  mov [retval],ax
-  call restart
-  push ds                           ; 压栈ds用于恢复
-  mov ax, 0                         ; ax临时用于修改ds
-  mov ds, ax                        ; 临时修改ds为0，用于恢复ax
-  mov ax,[retval]                   ; 修改ax为返回值
-  pop ds                            ; 恢复ds
-  sti
-  iret
-  sys_table:
-  dd sys_putchar,sys_getch,sys_putchar_c
-  
-\end{lstlisting}
-注意，可能是Bochs的Bug的原因，我的标号如果在数据区没有被定义成双字，在运行时并不会存在。因此在si做变址寻址时，需要使用$ 4\times si $。如果可以正常访问标号，
-那么使用dw和$ 2\times si $即可。
+由于我的内核shell并没有设计成一个进程，因此无法和用户程序并行执行，那么多进程执行就需要一次性切断，通过恢复现场来返回内核。切断的方式是使用一个标志变量，记录当前是否是多进程状态，是就对调度队列进行调度，否则执行完风火轮就回到内核。
+中间还需要用户的输入来切换标志的值。切换回非多进程模式时，还需要指定当前的PCB为0（内核）。需要注意的是，在没有将段换回内核时，使用内存需要指定用cs来寻址。代码如下：
+\begin{lstlisting}[language={[x86masm]Assembler},label=save,caption=中断保护的部分代码]
+  Timer:
+	nop
+	cli
+    cmp word[cs:timeFlag], 0
+    je showWheel
+    ;此处是寄存器压栈的代码
+    mov ax, cs
+    mov ds, ax
+    mov es, ax
+	call Timesave
 
-\subsubsection{内核的系统调用过程编写}
-由于之前的实验里已经编写了比较完善的字符和IO库，这次除了增加一个系统调用外，其他都调用原有的函数即可。
-\paragraph{系统调用-打印字符}
-保存现场，用栈基址寄存器寻址压入的参数，然后远调用（按照c的调用约定）putchar，再恢复栈寄存器即可。唯一需要注意的是参数所在的偏移量。总偏移量为4(call dword)+6(int 21)+2(call)+16(pusha)=28。代码如下：
-\begin{lstlisting}[language={[x86masm]Assembler},label=sysputchar,caption=系统调用打印字符过程]
-  sys_putchar: ;系统调用：打印一个字符(不需要返回参数)
-  pusha
-  mov bp,sp
-  push word[bp+28];16(pusha)+2(call)+6(int 21)+4(call dword)
-  call dword putchar
-  add sp, 2
-  popa
-  ret  
-\end{lstlisting}
-\paragraph{系统调用-获得键盘的一个输入（阻塞）}
-该过程无参数传入，所以直接远调用即可。参数放在ax中由中断程序处理。
-\paragraph{系统调用-打印彩色字符}
-该过程是第一次实现，使用的是打印字符串的bios调用，传入的参数中可以包含颜色参数。其中还需要指定字符串的打印位置，因此需要使用获得光标位置的bios调用。参数所在的偏移与上一段原理相同，代码如下：
-\begin{lstlisting}[language={[x86masm]Assembler},label=sysputcharc,caption=系统调用打印彩色字符过程]
-  sys_putchar_c:                  ; 函数：在光标处打印一个彩色字符
-  pusha
-  mov bx, 0                   ; 页号=0
-  mov ah, 03h                 ; 功能号：获取光标位置
-  int 10h                     ; dh=行，dl=列
-  mov bp, sp
-  add bp, 28                  ; 参数地址，es:bp指向要显示的字符
-  mov cx, 1                   ; 显示1个字符
-  mov ax, 1301h               ; AH = 13h（功能号）、AL = 01h（光标置于串尾）
-  mov bh, 0                   ; 页号
-  mov bl, [bp+4]              ; 颜色属性
-  int 10h                     ; 显示字符串（1个字符）
-  popa
-  ret
+checkEsc:
+    mov ah, 01h
+    int 16h
+    jz continue
+    mov ah, 0
+    int 16h
+    cmp al, 27
+    jne continue
+    mov ax, 0
+    mov [timeFlag], ax
+    mov [curr_proc_id], ax
+    jmp restart
+
+continue:
+	call dword schedule
+restart:
+  PCB_RESTART
+  ;此处是风火轮显示代码（包括保护现场）
+  mov al,20h			; AL = EOI
+	out 20h,al			; 发送EOI到主8529A
+	out 0A0h,al			; 发送EOI到从8529A
+  ;此处是风火轮的恢复现场
+	sti
+	iret			; 从中断返回
 \end{lstlisting}
 
-\subsubsection{系统调用接口编写}
-完成了系统调用后，需要的是给用户编程的接口，这一部分代码需要与用户程序一起编译，用户程序不可以使用内核自己的过程。因为我使用的不是内联汇编，所以使用接口需要两步：
-\begin{enumerate}
-  \item 在c的代码中调用syscall\_xx函数，该函数由汇编定义。声明为extern。
-  \item 在汇编代码中实现syscall\_xx函数，指定功能号，并调用中断。
-\end{enumerate}
-以打印字符的putchar为例，代码如下：
-\begin{lstlisting}[language={[x86masm]Assembler},label=syscallputchar,caption=打印字符的系统调用]
-  global syscall_putchar
-  syscall_putchar:
-      mov ah,0
-      int 21h
-      ret
-\end{lstlisting}
+\subsection{内核程序修改}
 
-\subsection{实现库过程}
-大部分库过程都在之前的实验中实现，因此这次只设计一个库过程，打印彩色字符串。由于打印彩色字符的系统调用已经实现，打印彩色字符串只需要将字符串遍历打印。代码如下：
-\begin{lstlisting}[language={c},label=printc,caption=打印彩色字符串函数]
-  void print_c(const char* str, uint8_t color) {
-    for(int i = 0, len = strlen(str); i < len; i++) {
-        syscall_putchar_c(str[i], color);
-    }
+\subsubsection{修改批处理过程}
+
+由于5.1中将用户程序的加载和执行分开，因此原来的批处理过程也要进行修改。为了更方便的写时钟中断向量，我封装了两个函数setTimeIV，setDateIV，分别用于写两个时钟中断处理程序。此外，从这次实验开始，批处理的命令改为batch。代码如下：
+\begin{lstlisting}[language={c},label=batch,caption=批处理过程（部分代码）]
+  if (strcmp(command, commands[Bat]) == 0)
+  {
+      int valid = target[0] != '\0' && checknum(target, usrprogNum);
+      if (valid)
+      {
+          for (int i = 0, len = strlen(target); i < len; i++)
+          {
+              int pid = target[i] - '0' - 1;
+              loadUsrProgram(&Comlist[pid]);
+              setTimeIV();
+              runUsrProgram(&Comlist[pid]);
+              cls();
+              setDateIV();
+          }
+      }
+  }
 }
 \end{lstlisting}
 
-\subsection{编写使用库过程的测试程序}
-测试程序为插入排序，程序在获得一串数字输入后，将递增序列打印出来。由于操作系统中并没有缓冲区，我也没有实现printf和scanf函数，所以获得了用户的完整输入后，还需要自己处理转换成数字。
+\subsubsection{增加多进程过程}
 
-\subsubsection{atoi函数}
-先去掉多余的空格，检查是否带负号，之后只需要遍历字符串来计算数字。要注意数字是否溢出。其中我使用isdigit判断开头是否为数字，该过程可以用宏来定义。代码如下：
-\begin{lstlisting}[language={c},label=atoi,caption=atoi函数]
-  #define isdigit(c) ((c) >= '0' && (c) <= '9')
-  int atoi(char* str) {
-    int negative = 0;
-    long long ret = 0;
-    if(0 == str)
-        return 0;
-    while(' ' == (*str))
-        str++;
-    if(0 == *str)
-        return 0;
-    negative = (*str == '-') ? 1 : 0;
-    if(!isdigit(*str))
-        return 0;
-    while(isdigit(*str))
-    {
-        ret = ret*10 + *str -'0';
-        if(ret > (negative?-(long long )INT32_MIN:INT32_MAX))
-            return negative?INT32_MIN:INT32_MAX;
-        str++;
-    }
-    return negative?-ret:ret;
-}
-\end{lstlisting}
-
-\subsubsection{main函数}
-main函数中需要打印字符串，然后获得输入，对输入的字符串的每个字符进行遍历，将数字字符串转换成数字并保存在字符数组中，调用插入排序函数，最后输出结果。返回前需要getch()，否则执行完毕会清屏并立刻回到主界面。代码如下：
-\begin{lstlisting}[language={c},label=main,caption=main函数]
-  int main(){
-    char buff[200],numbuf[20];
-    char *greetMsg ;//内容较长，省略
-    char *errMsg = "your input is not valid!\n";
-    char *exitMsg = "Press any key to exit..";
-    print_c(greetMsg,0x0B);
-    int cnt = 20;
-    int num[cnt];
-    int strHead=0,strTail = 0,j;
-    while (1){
-        readbuff(buff, 200);
-        while(' ' == buff[strHead]){
-            strHead++;
-        }
-        if(0 == buff[strHead])
-            continue;
-        break;
-    }
-    for (int i = 0; i < strlen(buff); i++)
-    {
-        if (!isdigit(buff[i]) && buff[i] != ' '){
-            puts(errMsg);
-            puts(exitMsg);
-            syscall_getch();
-            return 0;
-        }
-    }
-    
-    for (int i = 0; i < cnt; i++,j=0)
-    {
-        j = 0;
-        strTail = strHead;
-        while('\0'!=buff[strTail]&&' ' != buff[strTail]){
-            strTail++;
-        }
-        for (j = 0; j < strTail-strHead; j++)
-        {
-            numbuf[j] = buff[strHead + j];
-        }
-        numbuf[j] = '\0';
-
-        num[i] = atoi(numbuf);
-        if ('\0'==buff[strTail]){
-            cnt = i+1;
-            break;        
-        }
-        while(buff[++strTail]==' ')
-            ;
-        strHead=strTail;
-    }
-    insertionSort(num, num + cnt);
-    for (int i = 0; i < cnt; i++)
-    {
-        putnum(num[i], 10);
-        syscall_putchar(' ');
-    }
-    syscall_putchar('\n');
-    syscall_putchar('\r');
-    puts(exitMsg);
-    syscall_getch();
-}
-\end{lstlisting}
-\subsubsection{将程序放入镜像中测试}
-该程序为第五个程序，将其各项信息加入用户程序表后，就可以在内核中执行。结果请看运行与演示部分。[图\ref{fig:test.com}]
-
-\subsection{INT 22实现和用户程序修改}
-\subsubsection{INT 22实现}
-按照实验要求，INT22只输出“INT 22”，在c代码中实现打印函数，然后在中断过程中调用即可，代码如下：
-\begin{lstlisting}[language={[x86masm]Assembler},label=sysint22,caption=22号中断的汇编过程]
-sys_int22:
-  call dword sysc_int22
-  ret
-\end{lstlisting}
-
-\begin{lstlisting}[language={c},label=syscint22,caption=22号中断的c函数]
-  void sysc_int22(){
-    char str[] = "INT22H is here!";
-    printPos(str,strlen(str),22,50);
+多进程的部分框架大致一样，区别在于多进程只需要加载程序，运行程序依靠的是时钟中断处理程序。设置多进程标志前，需要建立进程对应的PCB，并设置为就绪状态。建立过程在5.2中已说明。通过循环将目标程序依次设置为就绪的PCB后，将多进程标志置为1，
+然后修改时钟中断程序为仅显示风火轮。但是此处要注意的是，修改了多进程标志后，内核的代码是仍然会执行的，而且执行的条数与时间有关，为了保证设置之后能立刻开始调度，我将时钟中断封装为函数，并且手动调用。这么做的话，只有用户按下esc键后，
+多进程标志被设为0，restart过程将内核的现场恢复，就会回到内核调用时钟中断的下一条语句。多进程的命令为run。
+\begin{lstlisting}[language={c},label=run,caption=多进程过程（部分代码）]
+  else if (strcmp(command, commands[Run]) == 0)
+  {
+      pcb_init();
+      int valid = target[0] != '\0' && checknum(target, usrprogNum);
+      putnum(valid, 10);
+      newline;
+      if (valid)
+      {
+          for (int i = 0, len = strlen(target); i < len; i++)
+          {
+              int pid = target[i] - '0' - 1;
+              loadUsrProgram(&Comlist[pid]);
+              create_proc(&Comlist[pid]);
+          }
+          timeFlag = 1;
+          setTimeIV();
+          int8();
+          cls();
+          puts(mul_proc_msg);
+          newline;
+          setDateIV();
+      }
   }
 \end{lstlisting}
-  
-\subsubsection{用户程序修改-取消Ouch显示}
-在用户程序代码中删除修改中断向量的语句和有关Ouch代码。
-
 以上便是实验中编写的所有代码。最后，还需要将各个中断程序的地址送入中断向量表。代码如下：
 \begin{lstlisting}[language={[x86masm]Assembler},label=IVT,caption=将中断程序地址写入中断向量表]
   VECTOR_IN 20h,int20
